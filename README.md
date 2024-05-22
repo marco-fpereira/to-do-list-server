@@ -311,3 +311,12 @@ Update task completion status for the given user and task
 	}
 }
 ```
+## Installation guide
+
+```
+cd app/
+go mod init
+apt-get -y install make
+make deploy
+
+```
