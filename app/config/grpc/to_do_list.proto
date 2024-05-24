@@ -1,0 +1,60 @@
+syntax = "proto3";
+package grpc;
+option go_package="app/config/grpc";
+
+service Account {
+    rpc Signup(UserCredentialsRequest) returns(Void) {}
+    rpc Login(UserCredentialsRequest) returns(UserId) {}
+}
+
+message UserCredentialsRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message UserId {
+    string userId = 1;
+}
+
+service Task {
+    rpc GetAllTasks(GetAllTasksRequest) returns(TaskDomainList) {}
+    rpc CreateTask(CreateTaskRequest) returns(TaskDomain) {}
+    rpc UpdateTaskMessage(UpdateTaskMessageRequest) returns(TaskDomain) {}
+    rpc UpdateTaskCompleteness(UpdateTaskCompletenessRequest) returns(Void) {}
+}
+
+message TaskDomain {
+	string taskId = 1;
+	string taskMessage = 2;
+	string createdAt = 3;
+	bool isTaskUncompleted = 4;
+}
+
+message TaskDomainList {
+    repeated TaskDomain taskDomain = 1;
+}
+
+message GetAllTasksRequest {
+    string userId = 1;
+    string requestId = 2;
+}
+
+message CreateTaskRequest {
+    string taskMessage = 1;
+    string requestId = 2;
+}
+
+message UpdateTaskMessageRequest {
+    string userId = 1;
+    string taskId = 2;
+    string taskMessage = 3;
+    string requestId = 4;
+}
+
+message UpdateTaskCompletenessRequest {
+    string userId = 1;
+    string taskId = 2;
+    string requestId = 3;
+}
+
+message Void {}

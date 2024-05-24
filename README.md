@@ -313,6 +313,27 @@ Update task completion status for the given user and task
 ```
 ## Installation guide
 
+### Install protocol buffer and go plugins for protobuf
+
+First, you need to have golang installed. After that, run the following commands:
+```
+apt install -y protobuf-compiler
+protoc --version
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+```
+
+In order to the following commands work, is also necessary that you include the GOPATH in the PATH env variable:
+```
+export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+### Generate the .pb.go files
+```
+protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./app/config/grpc/to_do_list.proto
+```
+
+### Install golang and its dependencies
 ```
 cd app/
 go mod init
