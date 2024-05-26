@@ -31,6 +31,6 @@ func (t *taskUsecase) UpdateTaskMessage(ctx context.Context, userId string, task
 	return nil, nil
 }
 
-func (t *taskUsecase) UpdateTaskCompleteness(ctx context.Context, userId string, taskId string) {
-
+func (t *taskUsecase) UpdateTaskCompleteness(ctx context.Context, userId string, taskId string) error {
+	return nil
 }
