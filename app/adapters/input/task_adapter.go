@@ -2,16 +2,11 @@ package input
 
 import (
 	"context"
+	consts "to-do-list-server/app/adapters/consts"
 	"to-do-list-server/app/adapters/converters"
 	"to-do-list-server/app/config/grpc"
 	"to-do-list-server/app/domain/model/exception"
 	"to-do-list-server/app/domain/port/input"
-)
-
-type Key string
-
-const (
-	RequestId Key = "RequestId"
 )
 
 type taskAdapter struct {
@@ -31,7 +26,7 @@ func (t *taskAdapter) GetAllTasks(
 	ctx context.Context,
 	getAllTasksRequest *grpc.GetAllTasksRequest,
 ) (*grpc.TaskDomainList, error) {
-	ctx = context.WithValue(ctx, RequestId, getAllTasksRequest.RequestId)
+	ctx = context.WithValue(ctx, consts.REQUEST_ID, getAllTasksRequest.RequestId)
 	taskModelList, err := t.Task.GetAllTasks(ctx, getAllTasksRequest.UserId)
 	if err != nil {
 		return nil, exception.BuildError(err)
@@ -53,7 +48,7 @@ func (t *taskAdapter) CreateTask(
 	ctx context.Context,
 	createTaskRequest *grpc.CreateTaskRequest,
 ) (*grpc.TaskDomain, error) {
-	ctx = context.WithValue(ctx, RequestId, createTaskRequest.RequestId)
+	ctx = context.WithValue(ctx, consts.REQUEST_ID, createTaskRequest.RequestId)
 	taskDomain, err := t.Task.CreateTask(ctx, createTaskRequest.TaskMessage)
 	if err != nil {
 		return nil, exception.BuildError(err)
@@ -66,7 +61,7 @@ func (t *taskAdapter) UpdateTaskMessage(
 	ctx context.Context,
 	updateTaskMessageRequest *grpc.UpdateTaskMessageRequest,
 ) (*grpc.TaskDomain, error) {
-	ctx = context.WithValue(ctx, RequestId, updateTaskMessageRequest.RequestId)
+	ctx = context.WithValue(ctx, consts.REQUEST_ID, updateTaskMessageRequest.RequestId)
 	taskDomain, err := t.Task.UpdateTaskMessage(
 		ctx,
 		updateTaskMessageRequest.UserId,
@@ -83,7 +78,7 @@ func (t *taskAdapter) UpdateTaskCompleteness(
 	ctx context.Context,
 	updateTaskCompletenessRequest *grpc.UpdateTaskCompletenessRequest,
 ) (*grpc.Void, error) {
-	ctx = context.WithValue(ctx, RequestId, updateTaskCompletenessRequest.RequestId)
+	ctx = context.WithValue(ctx, consts.REQUEST_ID, updateTaskCompletenessRequest.RequestId)
 	err := t.Task.UpdateTaskCompleteness(ctx, updateTaskCompletenessRequest.UserId, updateTaskCompletenessRequest.TaskId)
 	if err != nil {
 		return nil, exception.BuildError(err)

@@ -10,6 +10,7 @@ service Account {
 message UserCredentialsRequest {
     string username = 1;
     string password = 2;
+    string requestId = 3;
 }
 
 message UserId {
