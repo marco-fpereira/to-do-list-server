@@ -29,7 +29,7 @@ func (t *taskAdapter) GetAllTasks(
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, getAllTasksRequest.RequestId)
 	taskModelList, err := t.Task.GetAllTasks(ctx, getAllTasksRequest.UserId)
 	if err != nil {
-		return nil, exception.BuildError(err)
+		return nil, exception.BuildResponseException(err)
 	}
 
 	taskDomainList := grpc.TaskDomainList{}
@@ -51,7 +51,7 @@ func (t *taskAdapter) CreateTask(
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, createTaskRequest.RequestId)
 	taskDomain, err := t.Task.CreateTask(ctx, createTaskRequest.TaskMessage)
 	if err != nil {
-		return nil, exception.BuildError(err)
+		return nil, exception.BuildResponseException(err)
 	}
 
 	return converters.ConvertToGrpcTaskDomain(*taskDomain), nil
@@ -69,7 +69,7 @@ func (t *taskAdapter) UpdateTaskMessage(
 		updateTaskMessageRequest.TaskMessage,
 	)
 	if err != nil {
-		return nil, exception.BuildError(err)
+		return nil, exception.BuildResponseException(err)
 	}
 	return converters.ConvertToGrpcTaskDomain(*taskDomain), nil
 }
@@ -81,7 +81,7 @@ func (t *taskAdapter) UpdateTaskCompleteness(
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, updateTaskCompletenessRequest.RequestId)
 	err := t.Task.UpdateTaskCompleteness(ctx, updateTaskCompletenessRequest.UserId, updateTaskCompletenessRequest.TaskId)
 	if err != nil {
-		return nil, exception.BuildError(err)
+		return nil, exception.BuildResponseException(err)
 	}
 	return &grpc.Void{}, nil
 }

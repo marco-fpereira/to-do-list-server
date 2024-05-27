@@ -14,6 +14,7 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	grpc "google.golang.org/grpc"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -24,11 +25,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	var opts []grpc.ServerOption
 
+	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
-	mysqlDatabaseAdapter := outputAdapter.NewMysqlDatabaseAdapter()
+	var db *gorm.DB
+	db, err = config.DbConnect()
+	if err != nil {
+		log.Fatalf("failed to open database connection: %v", err)
+	}
+
+	mysqlDatabaseAdapter := outputAdapter.NewMysqlDatabaseAdapter(db)
 	pb.RegisterTaskServer(grpcServer, buildTaskAdapter(mysqlDatabaseAdapter))
 	pb.RegisterAccountServer(grpcServer, buildAccountAdapter(mysqlDatabaseAdapter))
 

@@ -10,4 +10,5 @@ type TaskDomain struct {
 	TaskMessage       string    `copier:"taskMessage"`
 	CreatedAt         time.Time `copier:"createdAt"`
 	IsTaskUncompleted bool      `copier:"isTaskCompleted" default:"false"`
+	UserId            string
 }

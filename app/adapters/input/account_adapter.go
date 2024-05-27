@@ -27,10 +27,10 @@ func (a *accountAdapter) Signup(
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, userCredentialsRequest.RequestId)
 	err := a.Account.Signup(
 		ctx,
-		converters.ConvertToModelUserCredentialsDomain(userCredentialsRequest),
+		converters.FromRequestToModelUserCredentialsDomain(userCredentialsRequest),
 	)
 	if err != nil {
-		return nil, exception.BuildError(err)
+		return nil, exception.BuildResponseException(err)
 	}
 
 	return &grpc.Void{}, nil
@@ -43,10 +43,10 @@ func (a *accountAdapter) Login(
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, userCredentialsRequest.RequestId)
 	userId, err := a.Account.Login(
 		ctx,
-		converters.ConvertToModelUserCredentialsDomain(userCredentialsRequest),
+		converters.FromRequestToModelUserCredentialsDomain(userCredentialsRequest),
 	)
 	if err != nil {
-		return nil, exception.BuildError(err)
+		return nil, exception.BuildResponseException(err)
 	}
 
 	return &grpc.UserId{UserId: userId}, nil

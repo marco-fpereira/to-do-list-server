@@ -25,7 +25,7 @@ func NewAccountUseCase(
 }
 
 func (a *accountUseCase) Signup(ctx context.Context, userCredentials *model.UserCredentialsDomain) error {
-	user, err := a.database.GetUser(ctx, userCredentials.Username)
+	user, err := a.database.GetUserByUsername(ctx, userCredentials.Username)
 	if err != nil {
 		return err
 	}
