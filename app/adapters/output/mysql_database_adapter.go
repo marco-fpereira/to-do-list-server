@@ -2,12 +2,12 @@ package output
 
 import (
 	"context"
-	"to-do-list-server/app/adapters/converters"
 	"to-do-list-server/app/adapters/output/dto"
 	"to-do-list-server/app/domain/model"
 	"to-do-list-server/app/domain/model/exception"
 	"to-do-list-server/app/domain/port/output"
 
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
@@ -27,32 +27,34 @@ func (m *mysqlDatabaseAdapter) GetUser(
 	ctx context.Context,
 	userId string,
 ) (*model.UserCredentialsDomain, error) {
-	var userCredentialsDTO *dto.UserCredentialsDTO
+	var userCredentialsDTO dto.UserCredentialsDTO
 
 	result := m.db.First(&userCredentialsDTO, userId)
 	if result.Error != nil {
 		return nil, exception.BuildSqlException(result.Error)
 	}
 
-	user := converters.FromDtoToModelUserCredentialsDomain(userCredentialsDTO)
+	var user model.UserCredentialsDomain
+	copier.Copy(&user, &userCredentialsDTO)
 
-	return user, nil
+	return &user, nil
 }
 
 func (m *mysqlDatabaseAdapter) GetUserByUsername(
 	ctx context.Context,
 	username string,
 ) (*model.UserCredentialsDomain, error) {
-	var userCredentialsDTO *dto.UserCredentialsDTO
+	var userCredentialsDTO dto.UserCredentialsDTO
 
 	result := m.db.Where(&dto.UserCredentialsDTO{Username: username}).First(&userCredentialsDTO)
 	if result.Error != nil {
 		return nil, exception.BuildSqlException(result.Error)
 	}
 
-	user := converters.FromDtoToModelUserCredentialsDomain(userCredentialsDTO)
+	var user model.UserCredentialsDomain
+	copier.Copy(&user, &userCredentialsDTO)
 
-	return user, nil
+	return &user, nil
 }
 
 func (m *mysqlDatabaseAdapter) CreateUser(
@@ -67,7 +69,16 @@ func (m *mysqlDatabaseAdapter) GetAllTasks(
 	ctx context.Context,
 	userId string,
 ) (*[]model.TaskDomain, error) {
-	return nil, nil
+	var taskDTOSlice []dto.TaskDTO
+
+	result := m.db.Where(&dto.TaskDTO{UserId: userId}).Find(&taskDTOSlice)
+	if result.Error != nil {
+		return nil, exception.BuildSqlException(result.Error)
+	}
+
+	var taskSlice []model.TaskDomain
+	copier.Copy(&taskSlice, &taskDTOSlice)
+	return &taskSlice, nil
 }
 
 func (m *mysqlDatabaseAdapter) CreateTask(

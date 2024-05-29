@@ -28,7 +28,7 @@ message TaskDomain {
 	string taskId = 1;
 	string taskMessage = 2;
 	string createdAt = 3;
-	bool isTaskUncompleted = 4;
+	bool isTaskCompleted = 4;
 }
 
 message TaskDomainList {

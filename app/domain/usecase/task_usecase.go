@@ -20,7 +20,11 @@ func NewTaskUseCase(
 }
 
 func (t *taskUsecase) GetAllTasks(ctx context.Context, userId string) (*[]model.TaskDomain, error) {
-	return nil, nil
+	tasks, err := t.database.GetAllTasks(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	return tasks, nil
 }
 
 func (t *taskUsecase) CreateTask(ctx context.Context, taskMessage string) (*model.TaskDomain, error) {

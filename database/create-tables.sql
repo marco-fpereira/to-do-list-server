@@ -10,13 +10,13 @@ CREATE TABLE ACCOUNT(
     Username                VARCHAR(256) NOT NULL,
     Password                VARCHAR(512) NOT NULL,
     PRIMARY KEY (UserId)
-)
+);
 
 CREATE TABLE TASK(
     TaskId                  VARCHAR(36) NOT NULL,
     TaskMessage             VARCHAR(512),
     CreatedAt               TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    IsTaskUncompleted       BOOLEAN
+    IsTaskCompleted         BOOLEAN
     PRIMARY KEY (TaskId)
     FOREIGN KEY (UserId) REFERENCES ACCOUNT(UserId)
-)
+);

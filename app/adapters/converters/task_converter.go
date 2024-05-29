@@ -7,9 +7,9 @@ import (
 
 func ConvertToGrpcTaskDomain(t model.TaskDomain) *grpc.TaskDomain {
 	return &grpc.TaskDomain{
-		TaskId:            t.TaskId,
-		TaskMessage:       t.TaskMessage,
-		CreatedAt:         t.CreatedAt.String(),
-		IsTaskUncompleted: t.IsTaskUncompleted,
+		TaskId:          t.TaskId,
+		TaskMessage:     t.TaskMessage,
+		CreatedAt:       t.CreatedAt.String(),
+		IsTaskCompleted: t.IsTaskCompleted,
 	}
 }

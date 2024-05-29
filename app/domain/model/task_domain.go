@@ -6,9 +6,9 @@ import (
 )
 
 type TaskDomain struct {
-	TaskId            string    `copier:"taskId"`
-	TaskMessage       string    `copier:"taskMessage"`
-	CreatedAt         time.Time `copier:"createdAt"`
-	IsTaskUncompleted bool      `copier:"isTaskCompleted" default:"false"`
-	UserId            string
+	TaskId          string    `copier:"taskId"`
+	TaskMessage     string    `copier:"taskMessage"`
+	CreatedAt       time.Time `copier:"createdAt"`
+	IsTaskCompleted bool      `copier:"isTaskCompleted" default:"false"`
+	UserId          string
 }

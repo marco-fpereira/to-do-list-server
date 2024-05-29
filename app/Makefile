@@ -8,7 +8,12 @@ init-dependency:
 	go get -u golang.org/x/crypto
 	go get -u gorm.io/gorm
 	go get -u gorm.io/driver/mysql
+	go get -u github.com/DATA-DOG/go-sqlmock
+	go get -u github.com/golang/mock/gomock
+	go get -u github.com/google/uuid
+	go get -u github.com/jarcoal/httpmock
 	go get -u github.com/sirupsen/logrus
+	go get -u github.com/jinzhu/copier
 	go get -u github.com/joho/godotenv
 	go get -u google.golang.org/grpc
 	go get -u "github.com/go-sql-driver/mysql"
