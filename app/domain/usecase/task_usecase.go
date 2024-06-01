@@ -83,10 +83,11 @@ func (t *taskUsecase) UpdateTaskMessage(
 		return nil, err
 	}
 
-	task, err = t.database.UpdateTaskMessage(ctx, taskId, taskMessage)
+	err = t.database.UpdateTaskMessage(ctx, taskId, taskMessage)
 	if err != nil {
 		return nil, err
 	}
+	task.TaskMessage = taskMessage
 	return task, nil
 }
 

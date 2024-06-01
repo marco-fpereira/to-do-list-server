@@ -126,18 +126,16 @@ func (m *mysqlDatabaseAdapter) UpdateTaskMessage(
 	ctx context.Context,
 	taskId string,
 	taskMessage string,
-) (*model.TaskDomain, error) {
-	taskDTO := dto.TaskDTO{TaskId: taskId, TaskMessage: taskMessage}
+) error {
+	result := m.db.Model(&dto.TaskDTO{}).
+		Where("TaskId = ?", taskId).
+		UpdateColumn("TaskMessage", taskMessage)
 
-	result := m.db.UpdateColumn("TaskMessage", &taskDTO)
 	if result.Error != nil {
-		return nil, exception.BuildSqlException(result.Error)
+		return exception.BuildSqlException(result.Error)
 	}
 
-	var task model.TaskDomain
-	copier.Copy(&task, &taskDTO)
-
-	return &task, nil
+	return nil
 }
 
 func (m *mysqlDatabaseAdapter) UpdateTaskCompleteness(
@@ -145,11 +143,10 @@ func (m *mysqlDatabaseAdapter) UpdateTaskCompleteness(
 	taskId string,
 	newTaskCompleteness bool,
 ) error {
-	taskDTO := dto.TaskDTO{
-		TaskId:          taskId,
-		IsTaskCompleted: newTaskCompleteness,
-	}
-	result := m.db.UpdateColumn("IsTaskCompleted", &taskDTO)
+	result := m.db.Model(&dto.TaskDTO{}).
+		Where("TaskId = ?", taskId).
+		UpdateColumn("IsTaskCompleted", newTaskCompleteness)
+
 	if result.Error != nil {
 		return exception.BuildSqlException(result.Error)
 	}

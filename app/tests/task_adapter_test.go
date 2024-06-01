@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"database/sql/driver"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -85,6 +86,50 @@ func TestCreateTask_200(t *testing.T) {
 		t.Fatalf("unexpected nil response testing CreateTask: %v", err)
 	}
 	assert.Equal(mock.UserId, taskDomain.UserId)
+}
+
+func TestUpdateTaskMessage_200(t *testing.T) {
+	setEnvVars()
+	defer deleteEnvVars()
+	assert := assert.New(t)
+	ctx := context.Background()
+	client, sqlMock, closer := mock.StartServer(ctx, t)
+	defer closer()
+
+	sqlMock.ExpectQuery(
+		"SELECT * FROM `TASK` WHERE `TASK`.`TaskId` = ? ORDER BY `TASK`.`TaskId` LIMIT ?",
+	).WithArgs(mock.TaskId, 1).WillReturnRows(
+		sqlMock.NewRows([]string{"TaskId", "TaskMessage", "CreatedAt", "IsTaskCompleted", "UserId"}).
+			AddRow(mock.TaskId, mock.TaskMessage, time.Now(), true, mock.UserId),
+	)
+
+	sqlMock.ExpectBegin()
+
+	sqlMock.ExpectExec(
+		"UPDATE `TASK` SET `TaskMessage`=? WHERE TaskId = ?",
+	).WithArgs(
+		fmt.Sprintf("NEW %s", mock.TaskMessage),
+		mock.TaskId,
+	).WillReturnResult(
+		goSqlMock.NewResult(1, 1),
+	)
+
+	sqlMock.ExpectCommit()
+
+	request := &pb.UpdateTaskMessageRequest{
+		TaskId:      mock.TaskId,
+		TaskMessage: fmt.Sprintf("NEW %s", mock.TaskMessage),
+		RequestId:   uuid.New().String(),
+	}
+
+	taskDomain, err := client.UpdateTaskMessage(ctx, request)
+	if err != nil {
+		t.Fatalf("error testing UpdateTaskMessage: %v", err)
+	} else if taskDomain == nil {
+		t.Fatalf("unexpected nil response testing UpdateTaskMessage: %v", err)
+	}
+	assert.Equal(mock.UserId, taskDomain.UserId)
+	assert.Equal(fmt.Sprintf("NEW %s", mock.TaskMessage), taskDomain.TaskMessage)
 }
 
 func setEnvVars() {
