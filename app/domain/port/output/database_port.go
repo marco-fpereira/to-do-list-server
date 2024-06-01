@@ -10,7 +10,9 @@ type DatabasePort interface {
 	GetUserByUsername(ctx context.Context, username string) (*model.UserCredentialsDomain, error)
 	CreateUser(ctx context.Context, username string, password string) error
 	GetAllTasks(ctx context.Context, userId string) (*[]model.TaskDomain, error)
-	CreateTask(ctx context.Context, taskMessage string) (*model.TaskDomain, error)
-	UpdateTaskMessage(ctx context.Context, userId string, taskId string, taskMessage string) (*model.TaskDomain, error)
-	UpdateTaskCompleteness(ctx context.Context, userId string, taskId string) error
+	GetTask(ctx context.Context, taskId string) (*model.TaskDomain, error)
+	CreateTask(ctx context.Context, userId string, taskMessage string, isTaskCompleted bool) (*model.TaskDomain, error)
+	UpdateTaskMessage(ctx context.Context, taskId string, taskMessage string) (*model.TaskDomain, error)
+	UpdateTaskCompleteness(ctx context.Context, taskId string, newTaskCompleteness bool) error
+	DeleteTask(ctx context.Context, taskId string) error
 }

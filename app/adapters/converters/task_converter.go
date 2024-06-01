@@ -11,5 +11,6 @@ func ConvertToGrpcTaskDomain(t model.TaskDomain) *grpc.TaskDomain {
 		TaskMessage:     t.TaskMessage,
 		CreatedAt:       t.CreatedAt.String(),
 		IsTaskCompleted: t.IsTaskCompleted,
+		UserId:          t.UserId,
 	}
 }

@@ -22,6 +22,7 @@ service Task {
     rpc CreateTask(CreateTaskRequest) returns(TaskDomain) {}
     rpc UpdateTaskMessage(UpdateTaskMessageRequest) returns(TaskDomain) {}
     rpc UpdateTaskCompleteness(UpdateTaskCompletenessRequest) returns(Void) {}
+    rpc DeleteMessage(DeleteMessageRequest) returns (Void) {}
 }
 
 message TaskDomain {
@@ -29,6 +30,7 @@ message TaskDomain {
 	string taskMessage = 2;
 	string createdAt = 3;
 	bool isTaskCompleted = 4;
+    string userId = 5;
 }
 
 message TaskDomainList {
@@ -41,21 +43,25 @@ message GetAllTasksRequest {
 }
 
 message CreateTaskRequest {
-    string taskMessage = 1;
-    string requestId = 2;
+    string userId = 1;
+    string taskMessage = 2;
+    string requestId = 3;
 }
 
 message UpdateTaskMessageRequest {
-    string userId = 1;
-    string taskId = 2;
-    string taskMessage = 3;
-    string requestId = 4;
+    string taskId = 1;
+    string taskMessage = 2;
+    string requestId = 3;
 }
 
 message UpdateTaskCompletenessRequest {
-    string userId = 1;
-    string taskId = 2;
-    string requestId = 3;
+    string taskId = 1;
+    string requestId = 2;
+}
+
+message DeleteMessageRequest {
+    string taskId = 1;
+    string requestId = 2;
 }
 
 message Void {}

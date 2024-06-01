@@ -150,6 +150,7 @@ const (
 	Task_CreateTask_FullMethodName             = "/grpc.Task/CreateTask"
 	Task_UpdateTaskMessage_FullMethodName      = "/grpc.Task/UpdateTaskMessage"
 	Task_UpdateTaskCompleteness_FullMethodName = "/grpc.Task/UpdateTaskCompleteness"
+	Task_DeleteMessage_FullMethodName          = "/grpc.Task/DeleteMessage"
 )
 
 // TaskClient is the client API for Task service.
@@ -160,6 +161,7 @@ type TaskClient interface {
 	CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*TaskDomain, error)
 	UpdateTaskMessage(ctx context.Context, in *UpdateTaskMessageRequest, opts ...grpc.CallOption) (*TaskDomain, error)
 	UpdateTaskCompleteness(ctx context.Context, in *UpdateTaskCompletenessRequest, opts ...grpc.CallOption) (*Void, error)
+	DeleteMessage(ctx context.Context, in *DeleteMessageRequest, opts ...grpc.CallOption) (*Void, error)
 }
 
 type taskClient struct {
@@ -206,6 +208,15 @@ func (c *taskClient) UpdateTaskCompleteness(ctx context.Context, in *UpdateTaskC
 	return out, nil
 }
 
+func (c *taskClient) DeleteMessage(ctx context.Context, in *DeleteMessageRequest, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
+	err := c.cc.Invoke(ctx, Task_DeleteMessage_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TaskServer is the server API for Task service.
 // All implementations must embed UnimplementedTaskServer
 // for forward compatibility
@@ -214,6 +225,7 @@ type TaskServer interface {
 	CreateTask(context.Context, *CreateTaskRequest) (*TaskDomain, error)
 	UpdateTaskMessage(context.Context, *UpdateTaskMessageRequest) (*TaskDomain, error)
 	UpdateTaskCompleteness(context.Context, *UpdateTaskCompletenessRequest) (*Void, error)
+	DeleteMessage(context.Context, *DeleteMessageRequest) (*Void, error)
 	mustEmbedUnimplementedTaskServer()
 }
 
@@ -232,6 +244,9 @@ func (UnimplementedTaskServer) UpdateTaskMessage(context.Context, *UpdateTaskMes
 }
 func (UnimplementedTaskServer) UpdateTaskCompleteness(context.Context, *UpdateTaskCompletenessRequest) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateTaskCompleteness not implemented")
+}
+func (UnimplementedTaskServer) DeleteMessage(context.Context, *DeleteMessageRequest) (*Void, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessage not implemented")
 }
 func (UnimplementedTaskServer) mustEmbedUnimplementedTaskServer() {}
 
@@ -318,6 +333,24 @@ func _Task_UpdateTaskCompleteness_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Task_DeleteMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServer).DeleteMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Task_DeleteMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServer).DeleteMessage(ctx, req.(*DeleteMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Task_ServiceDesc is the grpc.ServiceDesc for Task service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -340,6 +373,10 @@ var Task_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateTaskCompleteness",
 			Handler:    _Task_UpdateTaskCompleteness_Handler,
+		},
+		{
+			MethodName: "DeleteMessage",
+			Handler:    _Task_DeleteMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

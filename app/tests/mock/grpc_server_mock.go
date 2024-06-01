@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"database/sql/driver"
 	"log"
 	"net"
 	"testing"
@@ -22,14 +23,13 @@ import (
 
 var (
 	UserId      = "7f937a3d-03fe-445b-8df8-7d8a43c25a52"
+	Username    = "test_user"
+	Password    = "My_s@f3_password"
 	TaskId      = "0fa0ac05-f20f-446f-beca-20fa636daf9c"
 	TaskMessage = "Hello World"
-
-// username = "test_user"
-// password = "My_s@f3_password"
 )
 
-func StartServer(ctx context.Context, t *testing.T) (pb.TaskClient, func()) {
+func StartServer(ctx context.Context, t *testing.T) (pb.TaskClient, sqlmock.Sqlmock, func()) {
 	mockController := gomock.NewController(t)
 	defer mockController.Finish()
 
@@ -38,7 +38,7 @@ func StartServer(ctx context.Context, t *testing.T) (pb.TaskClient, func()) {
 
 	baseServer := grpc.NewServer()
 
-	dbMock, _ := getSqlMock()
+	dbMock, sqlMock := getSqlMock()
 
 	database := output.NewMysqlDatabaseAdapter(dbMock)
 	task := usecase.NewTaskUseCase(database)
@@ -72,7 +72,7 @@ func StartServer(ctx context.Context, t *testing.T) (pb.TaskClient, func()) {
 	}
 
 	client := pb.NewTaskClient(conn)
-	return client, closer
+	return client, sqlMock, closer
 }
 
 func getSqlMock() (*gorm.DB, sqlmock.Sqlmock) {
@@ -95,9 +95,18 @@ func getSqlMock() (*gorm.DB, sqlmock.Sqlmock) {
 func mockSqlCalls(sqlMock sqlmock.Sqlmock) {
 	sqlMock.ExpectQuery("SELECT VERSION()").
 		WillReturnRows(sqlmock.NewRows([]string{"version()"}).AddRow("8.0.23"))
+}
 
-	sqlMock.ExpectQuery("SELECT * FROM `TASK` WHERE `TASK`.`user_id` = ?").WithArgs(UserId).WillReturnRows(
-		sqlMock.NewRows([]string{"TaskId", "TaskMessage", "CreatedAt", "IsTaskCompleted", "UserId"}).
-			AddRow(TaskId, TaskMessage, time.Now(), true, UserId),
-	)
+type AnyTime struct{}
+
+func (a AnyTime) Match(v driver.Value) bool {
+	_, ok := v.(time.Time)
+	return ok
+}
+
+type AnyString struct{}
+
+func (a AnyString) Match(v driver.Value) bool {
+	_, ok := v.(string)
+	return ok
 }

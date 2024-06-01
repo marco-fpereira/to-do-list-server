@@ -2,10 +2,15 @@ package tests
 
 import (
 	"context"
+	"database/sql/driver"
 	"os"
 	"testing"
+	"time"
 	pb "to-do-list-server/app/config/grpc"
 	mock "to-do-list-server/app/tests/mock"
+
+	goSqlMock "github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/google/uuid"
 )
@@ -13,10 +18,21 @@ import (
 func TestGetAllTasks_200(t *testing.T) {
 	setEnvVars()
 	defer deleteEnvVars()
+	assert := assert.New(t)
 	ctx := context.Background()
-	client, closer := mock.StartServer(ctx, t)
-
+	client, sqlMock, closer := mock.StartServer(ctx, t)
 	defer closer()
+
+	sqlMock.ExpectQuery(
+		"SELECT * FROM `TASK` WHERE UserId = ?",
+	).WithArgs(mock.UserId).WillReturnRows(
+		sqlMock.NewRows([]string{"TaskId", "TaskMessage", "CreatedAt", "IsTaskCompleted", "UserId"}).
+			AddRows(
+				[]driver.Value{mock.TaskId, mock.TaskMessage, time.Now(), true, mock.UserId},
+				[]driver.Value{mock.TaskId, mock.TaskMessage, time.Now(), true, mock.UserId},
+			),
+	)
+
 	request := &pb.GetAllTasksRequest{
 		UserId:    mock.UserId,
 		RequestId: uuid.New().String(),
@@ -28,12 +44,47 @@ func TestGetAllTasks_200(t *testing.T) {
 	} else if taskDomainSlice == nil {
 		t.Fatalf("unexpected nil response testing GetAllTasks: %v", err)
 	}
+	assert.Equal(2, len(taskDomainSlice.TaskDomain))
+	assert.Equal(mock.TaskId, taskDomainSlice.TaskDomain[0].TaskId)
+}
 
-	if len(taskDomainSlice.TaskDomain) != 1 || taskDomainSlice.TaskDomain[0].TaskId != mock.TaskId {
-		t.Fatalf("unexpected list size response testing GetAllTasks: %d", len(taskDomainSlice.TaskDomain))
-	} else {
-		t.Log("success")
+func TestCreateTask_200(t *testing.T) {
+	setEnvVars()
+	defer deleteEnvVars()
+	assert := assert.New(t)
+	ctx := context.Background()
+	client, sqlMock, closer := mock.StartServer(ctx, t)
+	defer closer()
+
+	sqlMock.ExpectQuery(
+		"SELECT * FROM `ACCOUNT` WHERE `ACCOUNT`.`UserId` = ? ORDER BY `ACCOUNT`.`UserId` LIMIT ?",
+	).WithArgs(mock.UserId, 1).WillReturnRows(
+		sqlMock.NewRows([]string{"UserId", "Username", "Password"}).
+			AddRow(mock.UserId, mock.Username, mock.Password),
+	)
+	sqlMock.ExpectBegin()
+
+	sqlMock.ExpectExec(
+		"INSERT INTO `TASK` (`TaskId`,`TaskMessage`,`CreatedAt`,`IsTaskCompleted`,`UserId`) VALUES (?,?,?,?,?)",
+	).WithArgs(mock.AnyString{}, mock.TaskMessage, mock.AnyTime{}, false, mock.UserId).WillReturnResult(
+		goSqlMock.NewResult(1, 1),
+	)
+
+	sqlMock.ExpectCommit()
+
+	request := &pb.CreateTaskRequest{
+		UserId:      mock.UserId,
+		TaskMessage: mock.TaskMessage,
+		RequestId:   uuid.New().String(),
 	}
+
+	taskDomain, err := client.CreateTask(ctx, request)
+	if err != nil {
+		t.Fatalf("error testing CreateTask: %v", err)
+	} else if taskDomain == nil {
+		t.Fatalf("unexpected nil response testing CreateTask: %v", err)
+	}
+	assert.Equal(mock.UserId, taskDomain.UserId)
 }
 
 func setEnvVars() {

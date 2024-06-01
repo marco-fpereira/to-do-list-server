@@ -12,7 +12,7 @@ type ResponseException struct {
 }
 
 func (r *ResponseException) Error() string {
-	return fmt.Sprintf("status %d: err %v", r.StatusCode, r.Err)
+	return fmt.Sprintf("status: %d | err: %v | fields: %s", r.StatusCode, r.Err, r.Fields)
 }
 
 func BuildResponseException(err error) *ResponseException {

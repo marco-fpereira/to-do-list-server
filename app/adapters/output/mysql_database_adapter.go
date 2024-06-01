@@ -28,8 +28,9 @@ func (m *mysqlDatabaseAdapter) GetUser(
 	userId string,
 ) (*model.UserCredentialsDomain, error) {
 	var userCredentialsDTO dto.UserCredentialsDTO
+	userCredentialsDTO.UserId = userId
 
-	result := m.db.First(&userCredentialsDTO, userId)
+	result := m.db.First(&userCredentialsDTO)
 	if result.Error != nil {
 		return nil, exception.BuildSqlException(result.Error)
 	}
@@ -45,8 +46,9 @@ func (m *mysqlDatabaseAdapter) GetUserByUsername(
 	username string,
 ) (*model.UserCredentialsDomain, error) {
 	var userCredentialsDTO dto.UserCredentialsDTO
+	userCredentialsDTO.Username = username
 
-	result := m.db.Where(&dto.UserCredentialsDTO{Username: username}).First(&userCredentialsDTO)
+	result := m.db.First(&userCredentialsDTO)
 	if result.Error != nil {
 		return nil, exception.BuildSqlException(result.Error)
 	}
@@ -71,7 +73,7 @@ func (m *mysqlDatabaseAdapter) GetAllTasks(
 ) (*[]model.TaskDomain, error) {
 	var taskDTOSlice []dto.TaskDTO
 
-	result := m.db.Where(&dto.TaskDTO{UserId: userId}).Find(&taskDTOSlice)
+	result := m.db.Where("UserId = ?", userId).Find(&taskDTOSlice)
 	if result.Error != nil {
 		return nil, exception.BuildSqlException(result.Error)
 	}
@@ -83,24 +85,85 @@ func (m *mysqlDatabaseAdapter) GetAllTasks(
 
 func (m *mysqlDatabaseAdapter) CreateTask(
 	ctx context.Context,
+	userId string,
 	taskMessage string,
+	isTaskCompleted bool,
 ) (*model.TaskDomain, error) {
-	return nil, nil
+	taskDTO := dto.TaskDTO{
+		TaskMessage:     taskMessage,
+		IsTaskCompleted: isTaskCompleted,
+		UserId:          userId,
+	}
+
+	result := m.db.Create(&taskDTO)
+
+	if result.Error != nil {
+		return nil, exception.BuildSqlException(result.Error)
+	}
+
+	var task model.TaskDomain
+	copier.Copy(&task, &taskDTO)
+	return &task, nil
+}
+
+func (m *mysqlDatabaseAdapter) GetTask(
+	ctx context.Context,
+	taskId string,
+) (*model.TaskDomain, error) {
+	taskDTO := dto.TaskDTO{TaskId: taskId}
+
+	result := m.db.First(&taskDTO)
+	if result.Error != nil {
+		return nil, exception.BuildSqlException(result.Error)
+	}
+
+	var task model.TaskDomain
+	copier.Copy(&task, &taskDTO)
+	return &task, nil
 }
 
 func (m *mysqlDatabaseAdapter) UpdateTaskMessage(
 	ctx context.Context,
-	userId string,
 	taskId string,
 	taskMessage string,
 ) (*model.TaskDomain, error) {
-	return nil, nil
+	taskDTO := dto.TaskDTO{TaskId: taskId, TaskMessage: taskMessage}
+
+	result := m.db.UpdateColumn("TaskMessage", &taskDTO)
+	if result.Error != nil {
+		return nil, exception.BuildSqlException(result.Error)
+	}
+
+	var task model.TaskDomain
+	copier.Copy(&task, &taskDTO)
+
+	return &task, nil
 }
 
 func (m *mysqlDatabaseAdapter) UpdateTaskCompleteness(
 	ctx context.Context,
-	userId string,
+	taskId string,
+	newTaskCompleteness bool,
+) error {
+	taskDTO := dto.TaskDTO{
+		TaskId:          taskId,
+		IsTaskCompleted: newTaskCompleteness,
+	}
+	result := m.db.UpdateColumn("IsTaskCompleted", &taskDTO)
+	if result.Error != nil {
+		return exception.BuildSqlException(result.Error)
+	}
+
+	return nil
+}
+
+func (m *mysqlDatabaseAdapter) DeleteTask(
+	ctx context.Context,
 	taskId string,
 ) error {
+	result := m.db.Delete(&dto.TaskDTO{TaskId: taskId})
+	if result.Error != nil {
+		return exception.BuildSqlException(result.Error)
+	}
 	return nil
 }

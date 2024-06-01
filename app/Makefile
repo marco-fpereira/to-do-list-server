@@ -13,6 +13,7 @@ init-dependency:
 	go get -u github.com/google/uuid
 	go get -u github.com/jarcoal/httpmock
 	go get -u github.com/sirupsen/logrus
+	go get -u github.com/stretchr/testify/assert
 	go get -u github.com/jinzhu/copier
 	go get -u github.com/joho/godotenv
 	go get -u google.golang.org/grpc

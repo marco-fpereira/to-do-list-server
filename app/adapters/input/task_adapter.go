@@ -7,6 +7,8 @@ import (
 	"to-do-list-server/app/config/grpc"
 	"to-do-list-server/app/domain/model/exception"
 	"to-do-list-server/app/domain/port/input"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type taskAdapter struct {
@@ -27,8 +29,17 @@ func (t *taskAdapter) GetAllTasks(
 	getAllTasksRequest *grpc.GetAllTasksRequest,
 ) (*grpc.TaskDomainList, error) {
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, getAllTasksRequest.RequestId)
+	tags := log.Fields{
+		"UserId":    getAllTasksRequest.UserId,
+		"RequestId": getAllTasksRequest.RequestId,
+	}
+
+	log.WithFields(tags).Info("Getting all tasks for the given UserId.")
+
 	taskModelList, err := t.Task.GetAllTasks(ctx, getAllTasksRequest.UserId)
 	if err != nil {
+		tags["error"] = err
+		log.WithFields(tags).Error("Error getting all tasks.")
 		return nil, exception.BuildResponseException(err)
 	}
 
@@ -40,6 +51,8 @@ func (t *taskAdapter) GetAllTasks(
 			converters.ConvertToGrpcTaskDomain(taskModel),
 		)
 	}
+	tags["NumberOfTasks"] = len(taskDomainList.TaskDomain)
+	log.WithFields(tags).Info("Tasks successfully retrieved.")
 
 	return &taskDomainList, nil
 }
@@ -49,11 +62,20 @@ func (t *taskAdapter) CreateTask(
 	createTaskRequest *grpc.CreateTaskRequest,
 ) (*grpc.TaskDomain, error) {
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, createTaskRequest.RequestId)
-	taskDomain, err := t.Task.CreateTask(ctx, createTaskRequest.TaskMessage)
+	tags := log.Fields{
+		"UserId":    createTaskRequest.UserId,
+		"RequestId": createTaskRequest.RequestId,
+	}
+	log.WithFields(tags).Info("Creating new task.")
+	taskDomain, err := t.Task.CreateTask(ctx, createTaskRequest.UserId, createTaskRequest.TaskMessage)
 	if err != nil {
+		tags["error"] = err
+		log.WithFields(tags).Error("Error creating new task.")
 		return nil, exception.BuildResponseException(err)
 	}
 
+	tags["TaskId"] = taskDomain.TaskId
+	log.WithFields(tags).Info("Task successfully created.")
 	return converters.ConvertToGrpcTaskDomain(*taskDomain), nil
 }
 
@@ -62,15 +84,22 @@ func (t *taskAdapter) UpdateTaskMessage(
 	updateTaskMessageRequest *grpc.UpdateTaskMessageRequest,
 ) (*grpc.TaskDomain, error) {
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, updateTaskMessageRequest.RequestId)
+	tags := log.Fields{
+		"TaskId":    updateTaskMessageRequest.TaskId,
+		"RequestId": updateTaskMessageRequest.RequestId,
+	}
+	log.WithFields(tags).Info("Updating task message.")
 	taskDomain, err := t.Task.UpdateTaskMessage(
 		ctx,
-		updateTaskMessageRequest.UserId,
 		updateTaskMessageRequest.TaskId,
 		updateTaskMessageRequest.TaskMessage,
 	)
 	if err != nil {
+		tags["error"] = err
+		log.WithFields(tags).Error("Error updating task message.")
 		return nil, exception.BuildResponseException(err)
 	}
+	log.WithFields(tags).Info("Task message successfully updated.")
 	return converters.ConvertToGrpcTaskDomain(*taskDomain), nil
 }
 
@@ -79,9 +108,43 @@ func (t *taskAdapter) UpdateTaskCompleteness(
 	updateTaskCompletenessRequest *grpc.UpdateTaskCompletenessRequest,
 ) (*grpc.Void, error) {
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, updateTaskCompletenessRequest.RequestId)
-	err := t.Task.UpdateTaskCompleteness(ctx, updateTaskCompletenessRequest.UserId, updateTaskCompletenessRequest.TaskId)
+	tags := log.Fields{
+		"TaskId":    updateTaskCompletenessRequest.TaskId,
+		"RequestId": updateTaskCompletenessRequest.RequestId,
+	}
+	log.WithFields(tags).Info("Updating task completeness.")
+	err := t.Task.UpdateTaskCompleteness(
+		ctx,
+		updateTaskCompletenessRequest.TaskId,
+	)
 	if err != nil {
+		tags["error"] = err
+		log.WithFields(tags).Error("Error updating task completeness.")
 		return nil, exception.BuildResponseException(err)
 	}
+	log.WithFields(tags).Info("Task completeness successfully updated.")
+	return &grpc.Void{}, nil
+}
+
+func (t *taskAdapter) DeleteMessage(
+	ctx context.Context,
+	deleteMessageRequest *grpc.DeleteMessageRequest,
+) (*grpc.Void, error) {
+	ctx = context.WithValue(ctx, consts.REQUEST_ID, deleteMessageRequest.RequestId)
+	tags := log.Fields{
+		"TaskId":    deleteMessageRequest.TaskId,
+		"RequestId": deleteMessageRequest.RequestId,
+	}
+	log.WithFields(tags).Info("Deleting task.")
+	err := t.Task.DeleteTask(
+		ctx,
+		deleteMessageRequest.TaskId,
+	)
+	if err != nil {
+		tags["error"] = err
+		log.WithFields(tags).Error("Error deleting task.")
+		return nil, exception.BuildResponseException(err)
+	}
+	log.WithFields(tags).Info("Task successfully deleted.")
 	return &grpc.Void{}, nil
 }
