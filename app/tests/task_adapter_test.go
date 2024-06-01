@@ -132,6 +132,46 @@ func TestUpdateTaskMessage_200(t *testing.T) {
 	assert.Equal(fmt.Sprintf("NEW %s", mock.TaskMessage), taskDomain.TaskMessage)
 }
 
+func TestUpdateTaskCompleteness_200(t *testing.T) {
+	setEnvVars()
+	defer deleteEnvVars()
+	assert := assert.New(t)
+	ctx := context.Background()
+	client, sqlMock, closer := mock.StartServer(ctx, t)
+	defer closer()
+
+	sqlMock.ExpectQuery(
+		"SELECT * FROM `TASK` WHERE `TASK`.`TaskId` = ? ORDER BY `TASK`.`TaskId` LIMIT ?",
+	).WithArgs(mock.TaskId, 1).WillReturnRows(
+		sqlMock.NewRows([]string{"TaskId", "TaskMessage", "CreatedAt", "IsTaskCompleted", "UserId"}).
+			AddRow(mock.TaskId, mock.TaskMessage, time.Now(), false, mock.UserId),
+	)
+
+	sqlMock.ExpectBegin()
+
+	sqlMock.ExpectExec(
+		"UPDATE `TASK` SET `IsTaskCompleted`=? WHERE TaskId = ?",
+	).WithArgs(
+		true,
+		mock.TaskId,
+	).WillReturnResult(
+		goSqlMock.NewResult(1, 1),
+	)
+
+	sqlMock.ExpectCommit()
+
+	request := &pb.UpdateTaskCompletenessRequest{
+		TaskId:    mock.TaskId,
+		RequestId: uuid.New().String(),
+	}
+
+	void, err := client.UpdateTaskCompleteness(ctx, request)
+	if err != nil {
+		t.Fatalf("error testing UpdateTaskMessage: %v", err)
+	}
+	assert.NotNil(void)
+}
+
 func setEnvVars() {
 	os.Setenv("HOST", "localhost")
 	os.Setenv("DBPORT", "3306")
