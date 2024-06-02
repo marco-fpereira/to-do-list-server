@@ -5,8 +5,8 @@ import (
 	consts "to-do-list-server/app/adapters/consts"
 	"to-do-list-server/app/adapters/converters"
 	"to-do-list-server/app/config/grpc"
-	"to-do-list-server/app/domain/model/exception"
 	"to-do-list-server/app/domain/port/input"
+	"to-do-list-server/app/exception"
 )
 
 type accountAdapter struct {

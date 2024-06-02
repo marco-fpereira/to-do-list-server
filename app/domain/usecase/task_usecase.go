@@ -79,9 +79,6 @@ func (t *taskUsecase) UpdateTaskMessage(
 	if err != nil {
 		return nil, err
 	}
-	if err := validators.ValidateTaskExists(task); err != nil {
-		return nil, err
-	}
 
 	err = t.database.UpdateTaskMessage(ctx, taskId, taskMessage)
 	if err != nil {
@@ -98,9 +95,6 @@ func (t *taskUsecase) UpdateTaskCompleteness(ctx context.Context, taskId string)
 
 	task, err := t.database.GetTask(ctx, taskId)
 	if err != nil {
-		return err
-	}
-	if err := validators.ValidateTaskExists(task); err != nil {
 		return err
 	}
 

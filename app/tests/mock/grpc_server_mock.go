@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"log"
+	"math/rand"
 	"net"
 	"testing"
 	"time"
@@ -109,4 +110,14 @@ type AnyString struct{}
 func (a AnyString) Match(v driver.Value) bool {
 	_, ok := v.(string)
 	return ok
+}
+
+func GenerateRandomString(length int) string {
+	chars := "abcdefghijklmnopqrstuvwxyz0123456789"
+	result := make([]byte, length)
+
+	for i := 0; i < length; i++ {
+		result[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(result)
 }

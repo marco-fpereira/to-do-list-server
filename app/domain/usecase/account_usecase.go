@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"to-do-list-server/app/domain/model"
-	"to-do-list-server/app/domain/model/exception"
 	"to-do-list-server/app/domain/port/input"
 	"to-do-list-server/app/domain/port/output"
-	"unicode"
+	"to-do-list-server/app/domain/validators"
+	"to-do-list-server/app/exception"
 )
 
 type accountUseCase struct {
@@ -30,14 +30,14 @@ func (a *accountUseCase) Signup(ctx context.Context, userCredentials *model.User
 		return err
 	}
 
-	if userAlreadyExists(user) {
+	if validators.ValidateUserAlreadyExists(user) {
 		return &exception.ResponseException{
 			StatusCode: http.StatusConflict,
 			Err:        errors.New("user already exists"),
 		}
 	}
 
-	if !passwordMatchesRequirements(user.Password) {
+	if !validators.ValidatePasswordMatchesRequirements(user.Password) {
 		return &exception.ResponseException{
 			StatusCode: http.StatusBadRequest,
 			Err:        errors.New("password is not strong enough"),
@@ -62,37 +62,4 @@ func (a *accountUseCase) Login(ctx context.Context, userCredentials *model.UserC
 	}
 	fmt.Println(user)
 	return "", nil
-}
-
-func userAlreadyExists(user *model.UserCredentialsDomain) bool {
-	return user != nil
-}
-
-func passwordMatchesRequirements(password string) bool {
-	matches := true
-
-	switch {
-	case !validateField(unicode.IsNumber, password):
-		matches = false
-	case !validateField(unicode.IsUpper, password):
-		matches = false
-	case !validateField(unicode.IsLower, password):
-		matches = false
-	case !validateField(unicode.IsSymbol, password) && !validateField(unicode.IsPunct, password):
-		matches = false
-	case len(password) < 8:
-		matches = false
-	}
-
-	return matches
-}
-
-func validateField(fn func(r rune) bool, value string) bool {
-	valid := false
-	for _, c := range value {
-		if fn(c) {
-			valid = true
-		}
-	}
-	return valid
 }
