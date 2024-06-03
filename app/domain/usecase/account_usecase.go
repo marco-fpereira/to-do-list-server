@@ -5,26 +5,37 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"to-do-list-server/app/adapters/exception"
 	"to-do-list-server/app/domain/model"
 	"to-do-list-server/app/domain/port/input"
 	"to-do-list-server/app/domain/port/output"
 	"to-do-list-server/app/domain/validators"
-	"to-do-list-server/app/exception"
 )
 
 type accountUseCase struct {
+	auth     output.AuthenticationPort
 	database output.DatabasePort
 }
 
 func NewAccountUseCase(
+	auth output.AuthenticationPort,
 	database output.DatabasePort,
 ) input.AccountPort {
 	return &accountUseCase{
+		auth:     auth,
 		database: database,
 	}
 }
 
-func (a *accountUseCase) Signup(ctx context.Context, userCredentials *model.UserCredentialsDomain) error {
+func (a *accountUseCase) Signup(
+	ctx context.Context,
+	userCredentials *model.UserCredentialsDomain,
+	token string,
+) error {
+	if isValid, err := a.auth.ValidateToken(token); !isValid {
+		return err
+	}
+
 	user, err := a.database.GetUserByUsername(ctx, userCredentials.Username)
 	if err != nil {
 		return err
@@ -54,7 +65,15 @@ func (a *accountUseCase) Signup(ctx context.Context, userCredentials *model.User
 	return nil
 }
 
-func (a *accountUseCase) Login(ctx context.Context, userCredentials *model.UserCredentialsDomain) (string, error) {
+func (a *accountUseCase) Login(
+	ctx context.Context,
+	userCredentials *model.UserCredentialsDomain,
+	token string,
+) (string, error) {
+	if isValid, err := a.auth.ValidateToken(token); !isValid {
+		return "", err
+	}
+
 	// todo: implement login
 	user, err := a.database.GetUserByUsername(ctx, userCredentials.Username)
 	if err != nil {

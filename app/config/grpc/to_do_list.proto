@@ -11,6 +11,7 @@ message UserCredentialsRequest {
     string username = 1;
     string password = 2;
     string requestId = 3;
+    string token = 4;
 }
 
 message UserId {
@@ -40,28 +41,33 @@ message TaskDomainList {
 message GetAllTasksRequest {
     string userId = 1;
     string requestId = 2;
+    string token = 3;
 }
 
 message CreateTaskRequest {
     string userId = 1;
     string taskMessage = 2;
     string requestId = 3;
+    string token = 4;
 }
 
 message UpdateTaskMessageRequest {
     string taskId = 1;
     string taskMessage = 2;
     string requestId = 3;
+    string token = 4;
 }
 
 message UpdateTaskCompletenessRequest {
     string taskId = 1;
     string requestId = 2;
+    string token = 3;
 }
 
 message DeleteMessageRequest {
     string taskId = 1;
     string requestId = 2;
+    string token = 3;
 }
 
 message Void {}

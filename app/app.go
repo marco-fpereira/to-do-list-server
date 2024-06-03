@@ -35,19 +35,26 @@ func main() {
 		log.Fatalf("failed to open database connection: %v", err)
 	}
 
+	jwtAuthenticationAdapter := outputAdapter.NewJwtAuthenticationAdapter()
 	mysqlDatabaseAdapter := outputAdapter.NewMysqlDatabaseAdapter(db)
-	pb.RegisterTaskServer(grpcServer, buildTaskAdapter(mysqlDatabaseAdapter))
-	pb.RegisterAccountServer(grpcServer, buildAccountAdapter(mysqlDatabaseAdapter))
+	pb.RegisterTaskServer(grpcServer, buildTaskAdapter(jwtAuthenticationAdapter, mysqlDatabaseAdapter))
+	pb.RegisterAccountServer(grpcServer, buildAccountAdapter(jwtAuthenticationAdapter, mysqlDatabaseAdapter))
 
 	grpcServer.Serve(listener)
 }
 
-func buildAccountAdapter(mysqlDatabaseAdapter outputDomain.DatabasePort) pb.AccountServer {
-	accountPort := domain.NewAccountUseCase(mysqlDatabaseAdapter)
+func buildAccountAdapter(
+	jwtAuthenticationAdapter outputDomain.AuthenticationPort,
+	mysqlDatabaseAdapter outputDomain.DatabasePort,
+) pb.AccountServer {
+	accountPort := domain.NewAccountUseCase(jwtAuthenticationAdapter, mysqlDatabaseAdapter)
 	return inputAdapter.NewAccountAdapter(accountPort)
 }
 
-func buildTaskAdapter(mysqlDatabaseAdapter outputDomain.DatabasePort) pb.TaskServer {
-	taskPort := domain.NewTaskUseCase(mysqlDatabaseAdapter)
+func buildTaskAdapter(
+	jwtAuthenticationAdapter outputDomain.AuthenticationPort,
+	mysqlDatabaseAdapter outputDomain.DatabasePort,
+) pb.TaskServer {
+	taskPort := domain.NewTaskUseCase(jwtAuthenticationAdapter, mysqlDatabaseAdapter)
 	return inputAdapter.NewTaskAdapter(taskPort)
 }

@@ -11,18 +11,29 @@ import (
 const MAX_MESSAGE_LENGTH = 512
 
 type taskUsecase struct {
+	auth     output.AuthenticationPort
 	database output.DatabasePort
 }
 
 func NewTaskUseCase(
+	auth output.AuthenticationPort,
 	database output.DatabasePort,
 ) input.TaskPort {
 	return &taskUsecase{
+		auth:     auth,
 		database: database,
 	}
 }
 
-func (t *taskUsecase) GetAllTasks(ctx context.Context, userId string) (*[]model.TaskDomain, error) {
+func (t *taskUsecase) GetAllTasks(
+	ctx context.Context,
+	userId string,
+	token string,
+) (*[]model.TaskDomain, error) {
+	if isValid, err := t.auth.ValidateToken(token); !isValid {
+		return nil, err
+	}
+
 	if err := validators.ValidateUUID("userId", userId); err != nil {
 		return nil, err
 	}
@@ -38,7 +49,12 @@ func (t *taskUsecase) CreateTask(
 	ctx context.Context,
 	userId string,
 	taskMessage string,
+	token string,
 ) (*model.TaskDomain, error) {
+	if isValid, err := t.auth.ValidateToken(token); !isValid {
+		return nil, err
+	}
+
 	if err := validators.ValidateUUID("userId", userId); err != nil {
 		return nil, err
 	}
@@ -66,7 +82,12 @@ func (t *taskUsecase) UpdateTaskMessage(
 	ctx context.Context,
 	taskId string,
 	taskMessage string,
+	token string,
 ) (*model.TaskDomain, error) {
+	if isValid, err := t.auth.ValidateToken(token); !isValid {
+		return nil, err
+	}
+
 	if err := validators.ValidateUUID("taskId", taskId); err != nil {
 		return nil, err
 	}
@@ -88,7 +109,15 @@ func (t *taskUsecase) UpdateTaskMessage(
 	return task, nil
 }
 
-func (t *taskUsecase) UpdateTaskCompleteness(ctx context.Context, taskId string) error {
+func (t *taskUsecase) UpdateTaskCompleteness(
+	ctx context.Context,
+	taskId string,
+	token string,
+) error {
+	if isValid, err := t.auth.ValidateToken(token); !isValid {
+		return err
+	}
+
 	if err := validators.ValidateUUID("taskId", taskId); err != nil {
 		return err
 	}
@@ -105,7 +134,15 @@ func (t *taskUsecase) UpdateTaskCompleteness(ctx context.Context, taskId string)
 	return nil
 }
 
-func (t *taskUsecase) DeleteTask(ctx context.Context, taskId string) error {
+func (t *taskUsecase) DeleteTask(
+	ctx context.Context,
+	taskId string,
+	token string,
+) error {
+	if isValid, err := t.auth.ValidateToken(token); !isValid {
+		return err
+	}
+
 	task, err := t.database.GetTask(ctx, taskId)
 	if err != nil {
 		return err

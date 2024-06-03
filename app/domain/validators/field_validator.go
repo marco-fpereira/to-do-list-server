@@ -2,8 +2,8 @@ package validators
 
 import (
 	"errors"
+	"to-do-list-server/app/adapters/exception"
 	"to-do-list-server/app/domain/model"
-	"to-do-list-server/app/exception"
 	"unicode"
 
 	"github.com/google/uuid"

@@ -17,11 +17,22 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestGetAllTasks_200(t *testing.T) {
+var (
+	ctx   context.Context
+	token string
+)
+
+func TestMain(m *testing.M) {
 	setEnvVars()
 	defer deleteEnvVars()
+	ctx = context.Background()
+	token = mock.GenerateMockToken()
+	code := m.Run()
+	os.Exit(code)
+}
+
+func TestGetAllTasks_200(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
 	client, sqlMock, closer := mock.StartServer(ctx, t)
 	defer closer()
 
@@ -38,6 +49,7 @@ func TestGetAllTasks_200(t *testing.T) {
 	request := &pb.GetAllTasksRequest{
 		UserId:    mock.UserId,
 		RequestId: uuid.New().String(),
+		Token:     token,
 	}
 
 	taskDomainSlice, err := client.GetAllTasks(ctx, request)
@@ -51,16 +63,14 @@ func TestGetAllTasks_200(t *testing.T) {
 }
 
 func TestGetAllTasks_400(t *testing.T) {
-	setEnvVars()
-	defer deleteEnvVars()
 	assert := assert.New(t)
-	ctx := context.Background()
 	client, _, closer := mock.StartServer(ctx, t)
 	defer closer()
 
 	request := &pb.GetAllTasksRequest{
 		UserId:    "Invalid_user_id",
 		RequestId: uuid.New().String(),
+		Token:     token,
 	}
 
 	taskDomainSlice, err := client.GetAllTasks(ctx, request)
@@ -72,10 +82,7 @@ func TestGetAllTasks_400(t *testing.T) {
 }
 
 func TestCreateTask_200(t *testing.T) {
-	setEnvVars()
-	defer deleteEnvVars()
 	assert := assert.New(t)
-	ctx := context.Background()
 	client, sqlMock, closer := mock.StartServer(ctx, t)
 	defer closer()
 
@@ -99,6 +106,7 @@ func TestCreateTask_200(t *testing.T) {
 		UserId:      mock.UserId,
 		TaskMessage: mock.TaskMessage,
 		RequestId:   uuid.New().String(),
+		Token:       token,
 	}
 
 	taskDomain, err := client.CreateTask(ctx, request)
@@ -111,10 +119,7 @@ func TestCreateTask_200(t *testing.T) {
 }
 
 func TestCreateTask_400(t *testing.T) {
-	setEnvVars()
-	defer deleteEnvVars()
 	assert := assert.New(t)
-	ctx := context.Background()
 	client, _, closer := mock.StartServer(ctx, t)
 	defer closer()
 
@@ -122,11 +127,13 @@ func TestCreateTask_400(t *testing.T) {
 		UserId:      "invalid_user_id",
 		TaskMessage: mock.TaskMessage,
 		RequestId:   uuid.New().String(),
+		Token:       token,
 	}
 	request2 := &pb.CreateTaskRequest{
 		UserId:      mock.UserId,
 		TaskMessage: mock.GenerateRandomString(513),
 		RequestId:   uuid.New().String(),
+		Token:       token,
 	}
 
 	taskDomain, err := client.CreateTask(ctx, request1)
@@ -145,10 +152,7 @@ func TestCreateTask_400(t *testing.T) {
 }
 
 func TestUpdateTaskMessage_200(t *testing.T) {
-	setEnvVars()
-	defer deleteEnvVars()
 	assert := assert.New(t)
-	ctx := context.Background()
 	client, sqlMock, closer := mock.StartServer(ctx, t)
 	defer closer()
 
@@ -176,6 +180,7 @@ func TestUpdateTaskMessage_200(t *testing.T) {
 		TaskId:      mock.TaskId,
 		TaskMessage: fmt.Sprintf("NEW %s", mock.TaskMessage),
 		RequestId:   uuid.New().String(),
+		Token:       token,
 	}
 
 	taskDomain, err := client.UpdateTaskMessage(ctx, request)
@@ -189,10 +194,7 @@ func TestUpdateTaskMessage_200(t *testing.T) {
 }
 
 func TestUpdateTaskMessage_404(t *testing.T) {
-	setEnvVars()
-	defer deleteEnvVars()
 	assert := assert.New(t)
-	ctx := context.Background()
 	client, sqlMock, closer := mock.StartServer(ctx, t)
 	defer closer()
 
@@ -204,6 +206,7 @@ func TestUpdateTaskMessage_404(t *testing.T) {
 		TaskId:      mock.TaskId,
 		TaskMessage: fmt.Sprintf("NEW %s", mock.TaskMessage),
 		RequestId:   uuid.New().String(),
+		Token:       token,
 	}
 
 	taskDomain, err := client.UpdateTaskMessage(ctx, request)
@@ -215,10 +218,7 @@ func TestUpdateTaskMessage_404(t *testing.T) {
 }
 
 func TestUpdateTaskCompleteness_200(t *testing.T) {
-	setEnvVars()
-	defer deleteEnvVars()
 	assert := assert.New(t)
-	ctx := context.Background()
 	client, sqlMock, closer := mock.StartServer(ctx, t)
 	defer closer()
 
@@ -245,6 +245,7 @@ func TestUpdateTaskCompleteness_200(t *testing.T) {
 	request := &pb.UpdateTaskCompletenessRequest{
 		TaskId:    mock.TaskId,
 		RequestId: uuid.New().String(),
+		Token:     token,
 	}
 
 	void, err := client.UpdateTaskCompleteness(ctx, request)
@@ -255,10 +256,7 @@ func TestUpdateTaskCompleteness_200(t *testing.T) {
 }
 
 func TestDeleteMessage_200(t *testing.T) {
-	setEnvVars()
-	defer deleteEnvVars()
 	assert := assert.New(t)
-	ctx := context.Background()
 	client, sqlMock, closer := mock.StartServer(ctx, t)
 	defer closer()
 
@@ -284,6 +282,7 @@ func TestDeleteMessage_200(t *testing.T) {
 	request := &pb.DeleteMessageRequest{
 		TaskId:    mock.TaskId,
 		RequestId: uuid.New().String(),
+		Token:     token,
 	}
 
 	void, err := client.DeleteMessage(ctx, request)
@@ -299,6 +298,7 @@ func setEnvVars() {
 	os.Setenv("DBUSER", "root")
 	os.Setenv("DBPASS", "root")
 	os.Setenv("DBNAME", "TODOLIST")
+	os.Setenv("JWT-SECRET-KEY", mock.SampleSecretKey)
 }
 
 func deleteEnvVars() {

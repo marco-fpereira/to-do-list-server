@@ -11,6 +11,7 @@ init-dependency:
 	go get -u github.com/DATA-DOG/go-sqlmock
 	go get -u github.com/golang/mock/gomock
 	go get -u github.com/google/uuid
+	go get -u github.com/golang-jwt/jwt/v5
 	go get -u github.com/jarcoal/httpmock
 	go get -u github.com/sirupsen/logrus
 	go get -u github.com/stretchr/testify/assert

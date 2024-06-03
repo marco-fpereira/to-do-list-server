@@ -6,6 +6,15 @@ import (
 )
 
 type AccountPort interface {
-	Signup(ctx context.Context, userCredentials *model.UserCredentialsDomain) (err error)
-	Login(ctx context.Context, userCredentials *model.UserCredentialsDomain) (userId string, err error)
+	Signup(
+		ctx context.Context,
+		userCredentials *model.UserCredentialsDomain,
+		token string,
+	) (err error)
+
+	Login(
+		ctx context.Context,
+		userCredentials *model.UserCredentialsDomain,
+		token string,
+	) (userId string, err error)
 }

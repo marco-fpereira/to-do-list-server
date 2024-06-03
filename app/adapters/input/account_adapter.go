@@ -4,9 +4,9 @@ import (
 	"context"
 	consts "to-do-list-server/app/adapters/consts"
 	"to-do-list-server/app/adapters/converters"
+	"to-do-list-server/app/adapters/exception"
 	"to-do-list-server/app/config/grpc"
 	"to-do-list-server/app/domain/port/input"
-	"to-do-list-server/app/exception"
 )
 
 type accountAdapter struct {
@@ -28,6 +28,7 @@ func (a *accountAdapter) Signup(
 	err := a.Account.Signup(
 		ctx,
 		converters.FromRequestToModelUserCredentialsDomain(userCredentialsRequest),
+		userCredentialsRequest.Token,
 	)
 	if err != nil {
 		return nil, exception.BuildResponseException(err)
@@ -44,6 +45,7 @@ func (a *accountAdapter) Login(
 	userId, err := a.Account.Login(
 		ctx,
 		converters.FromRequestToModelUserCredentialsDomain(userCredentialsRequest),
+		userCredentialsRequest.Token,
 	)
 	if err != nil {
 		return nil, exception.BuildResponseException(err)

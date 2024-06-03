@@ -1,4 +1,4 @@
-package tests
+package mock
 
 import (
 	"context"
@@ -42,14 +42,15 @@ func StartServer(ctx context.Context, t *testing.T) (pb.TaskClient, sqlmock.Sqlm
 	dbMock, sqlMock := getSqlMock()
 
 	database := output.NewMysqlDatabaseAdapter(dbMock)
-	task := usecase.NewTaskUseCase(database)
+	auth := output.NewJwtAuthenticationAdapter()
+	task := usecase.NewTaskUseCase(auth, database)
 	taskAdapter := adapterInput.NewTaskAdapter(task)
 
 	pb.RegisterTaskServer(baseServer, taskAdapter)
 
 	go func() {
 		if err := baseServer.Serve(listener); err != nil {
-			log.Printf("Error serving server %v", err)
+			log.Fatalf("Error serving server %v", err)
 		}
 	}()
 
@@ -61,7 +62,7 @@ func StartServer(ctx context.Context, t *testing.T) (pb.TaskClient, sqlmock.Sqlm
 	)
 
 	if err != nil {
-		log.Printf("error connecting to server %v", err)
+		log.Fatalf("error connecting to server %v", err)
 	}
 
 	closer := func() {

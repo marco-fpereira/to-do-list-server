@@ -4,9 +4,9 @@ import (
 	"context"
 	consts "to-do-list-server/app/adapters/consts"
 	"to-do-list-server/app/adapters/converters"
+	"to-do-list-server/app/adapters/exception"
 	"to-do-list-server/app/config/grpc"
 	"to-do-list-server/app/domain/port/input"
-	"to-do-list-server/app/exception"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -36,7 +36,11 @@ func (t *taskAdapter) GetAllTasks(
 
 	log.WithFields(tags).Info("Getting all tasks for the given UserId.")
 
-	taskModelList, err := t.Task.GetAllTasks(ctx, getAllTasksRequest.UserId)
+	taskModelList, err := t.Task.GetAllTasks(
+		ctx,
+		getAllTasksRequest.UserId,
+		getAllTasksRequest.Token,
+	)
 	if err != nil {
 		tags["error"] = err
 		log.WithFields(tags).Error("Error getting all tasks.")
@@ -67,7 +71,12 @@ func (t *taskAdapter) CreateTask(
 		"RequestId": createTaskRequest.RequestId,
 	}
 	log.WithFields(tags).Info("Creating new task.")
-	taskDomain, err := t.Task.CreateTask(ctx, createTaskRequest.UserId, createTaskRequest.TaskMessage)
+	taskDomain, err := t.Task.CreateTask(
+		ctx,
+		createTaskRequest.UserId,
+		createTaskRequest.TaskMessage,
+		createTaskRequest.Token,
+	)
 	if err != nil {
 		tags["error"] = err
 		log.WithFields(tags).Error("Error creating new task.")
@@ -93,6 +102,7 @@ func (t *taskAdapter) UpdateTaskMessage(
 		ctx,
 		updateTaskMessageRequest.TaskId,
 		updateTaskMessageRequest.TaskMessage,
+		updateTaskMessageRequest.Token,
 	)
 	if err != nil {
 		tags["error"] = err
@@ -116,6 +126,7 @@ func (t *taskAdapter) UpdateTaskCompleteness(
 	err := t.Task.UpdateTaskCompleteness(
 		ctx,
 		updateTaskCompletenessRequest.TaskId,
+		updateTaskCompletenessRequest.Token,
 	)
 	if err != nil {
 		tags["error"] = err
@@ -139,6 +150,7 @@ func (t *taskAdapter) DeleteMessage(
 	err := t.Task.DeleteTask(
 		ctx,
 		deleteMessageRequest.TaskId,
+		deleteMessageRequest.Token,
 	)
 	if err != nil {
 		tags["error"] = err
