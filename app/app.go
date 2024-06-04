@@ -35,19 +35,27 @@ func main() {
 		log.Fatalf("failed to open database connection: %v", err)
 	}
 
+	bcryptCryptographyAdapter := outputAdapter.NewBCryptCryptographyAdapter()
 	jwtAuthenticationAdapter := outputAdapter.NewJwtAuthenticationAdapter()
 	mysqlDatabaseAdapter := outputAdapter.NewMysqlDatabaseAdapter(db)
 	pb.RegisterTaskServer(grpcServer, buildTaskAdapter(jwtAuthenticationAdapter, mysqlDatabaseAdapter))
-	pb.RegisterAccountServer(grpcServer, buildAccountAdapter(jwtAuthenticationAdapter, mysqlDatabaseAdapter))
+	pb.RegisterAccountServer(grpcServer,
+		buildAccountAdapter(jwtAuthenticationAdapter, bcryptCryptographyAdapter, mysqlDatabaseAdapter),
+	)
 
 	grpcServer.Serve(listener)
 }
 
 func buildAccountAdapter(
 	jwtAuthenticationAdapter outputDomain.AuthenticationPort,
+	bcryptCryptographyPort outputDomain.CryptographyPort,
 	mysqlDatabaseAdapter outputDomain.DatabasePort,
 ) pb.AccountServer {
-	accountPort := domain.NewAccountUseCase(jwtAuthenticationAdapter, mysqlDatabaseAdapter)
+	accountPort := domain.NewAccountUseCase(
+		jwtAuthenticationAdapter,
+		bcryptCryptographyPort,
+		mysqlDatabaseAdapter,
+	)
 	return inputAdapter.NewAccountAdapter(accountPort)
 }
 

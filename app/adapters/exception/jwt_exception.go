@@ -10,7 +10,7 @@ type JwtException struct {
 }
 
 func (j *JwtException) Error() string {
-	return fmt.Sprintf("err: %v", j.Message)
+	return fmt.Sprintf("err: %s", j.Message)
 }
 
 func BuildJwtException(

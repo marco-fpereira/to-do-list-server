@@ -2,6 +2,7 @@ package output
 
 import (
 	"context"
+	"errors"
 	"to-do-list-server/app/adapters/exception"
 	"to-do-list-server/app/adapters/output/dto"
 	"to-do-list-server/app/domain/model"
@@ -32,7 +33,11 @@ func (m *mysqlDatabaseAdapter) GetUser(
 
 	result := m.db.First(&userCredentialsDTO)
 	if result.Error != nil {
-		return nil, exception.BuildSqlException(result.Error)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, exception.BuildSqlException(result.Error)
+		}
 	}
 
 	var user model.UserCredentialsDomain
@@ -46,11 +51,14 @@ func (m *mysqlDatabaseAdapter) GetUserByUsername(
 	username string,
 ) (*model.UserCredentialsDomain, error) {
 	var userCredentialsDTO dto.UserCredentialsDTO
-	userCredentialsDTO.Username = username
 
-	result := m.db.First(&userCredentialsDTO)
+	result := m.db.Where("Username = ?", username).First(&userCredentialsDTO)
 	if result.Error != nil {
-		return nil, exception.BuildSqlException(result.Error)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, exception.BuildSqlException(result.Error)
+		}
 	}
 
 	var user model.UserCredentialsDomain
@@ -64,6 +72,16 @@ func (m *mysqlDatabaseAdapter) CreateUser(
 	username string,
 	password string,
 ) error {
+	userDTO := dto.UserCredentialsDTO{
+		Username: username,
+		Password: password,
+	}
+
+	result := m.db.Create(&userDTO)
+	if result.Error != nil {
+		return exception.BuildSqlException(result.Error)
+	}
+
 	return nil
 }
 

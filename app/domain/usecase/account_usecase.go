@@ -2,8 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"to-do-list-server/app/adapters/exception"
 	"to-do-list-server/app/domain/model"
 	"to-do-list-server/app/domain/port/input"
@@ -13,15 +11,18 @@ import (
 
 type accountUseCase struct {
 	auth     output.AuthenticationPort
+	crypt    output.CryptographyPort
 	database output.DatabasePort
 }
 
 func NewAccountUseCase(
 	auth output.AuthenticationPort,
+	crypt output.CryptographyPort,
 	database output.DatabasePort,
 ) input.AccountPort {
 	return &accountUseCase{
 		auth:     auth,
+		crypt:    crypt,
 		database: database,
 	}
 }
@@ -42,21 +43,24 @@ func (a *accountUseCase) Signup(
 
 	if validators.ValidateUserAlreadyExists(user) {
 		return &exception.ResponseException{
-			StatusCode: http.StatusConflict,
+			StatusCode: 409,
 			Message:    "user already exists",
 		}
 	}
 
 	if !validators.ValidatePasswordMatchesRequirements(user.Password) {
 		return &exception.ResponseException{
-			StatusCode: http.StatusBadRequest,
+			StatusCode: 400,
 			Message:    "password is not strong enough",
 		}
 	}
 
-	// todo: encrypt password before saving it
-	err = a.database.CreateUser(ctx, userCredentials.Username, userCredentials.Password)
+	encryptedPassword, err := a.crypt.EncryptKey(userCredentials.Password)
+	if err != nil {
+		return err
+	}
 
+	err = a.database.CreateUser(ctx, userCredentials.Username, encryptedPassword)
 	if err != nil {
 		return err
 	}
@@ -73,11 +77,29 @@ func (a *accountUseCase) Login(
 		return "", err
 	}
 
-	// todo: implement login
 	user, err := a.database.GetUserByUsername(ctx, userCredentials.Username)
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(user)
-	return "", nil
+
+	if !validators.ValidateUserAlreadyExists(user) {
+		return "", &exception.ResponseException{
+			StatusCode: 400,
+			Message:    "username or password is incorrect",
+		}
+	}
+
+	if validClaim, err := a.auth.ValidateClaim(token, "userId", user.UserId); !validClaim {
+		return "", err
+	}
+
+	isPasswordCorrect := a.crypt.VerifyEncryptedKey(user.Password, userCredentials.Password)
+
+	if !isPasswordCorrect {
+		return "", &exception.ResponseException{
+			StatusCode: 400,
+			Message:    "username or password is incorrect",
+		}
+	}
+	return user.UserId, nil
 }
