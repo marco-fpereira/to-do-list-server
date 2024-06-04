@@ -15,7 +15,7 @@ func GenerateMockToken() string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp":        json.Number(strconv.FormatInt(time.Now().Add(5*time.Minute).Unix(), 10)),
 		"authorized": true,
-		"username":   Username,
+		"userId":     UserId,
 	})
 	tokenString, err := token.SignedString([]byte(SampleSecretKey))
 	if err != nil {

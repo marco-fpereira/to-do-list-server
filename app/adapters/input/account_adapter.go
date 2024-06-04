@@ -4,7 +4,7 @@ import (
 	"context"
 	consts "to-do-list-server/app/adapters/consts"
 	"to-do-list-server/app/adapters/converters"
-	"to-do-list-server/app/adapters/exception"
+	"to-do-list-server/app/adapters/exception/handler"
 	"to-do-list-server/app/config/grpc"
 	"to-do-list-server/app/domain/port/input"
 )
@@ -31,7 +31,7 @@ func (a *accountAdapter) Signup(
 		userCredentialsRequest.Token,
 	)
 	if err != nil {
-		return nil, exception.BuildResponseException(err)
+		return nil, handler.HandleException(err)
 	}
 
 	return &grpc.Void{}, nil
@@ -48,7 +48,7 @@ func (a *accountAdapter) Login(
 		userCredentialsRequest.Token,
 	)
 	if err != nil {
-		return nil, exception.BuildResponseException(err)
+		return nil, handler.HandleException(err)
 	}
 
 	return &grpc.UserId{UserId: userId}, nil

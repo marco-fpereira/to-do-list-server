@@ -4,7 +4,7 @@ import (
 	"context"
 	consts "to-do-list-server/app/adapters/consts"
 	"to-do-list-server/app/adapters/converters"
-	"to-do-list-server/app/adapters/exception"
+	"to-do-list-server/app/adapters/exception/handler"
 	"to-do-list-server/app/config/grpc"
 	"to-do-list-server/app/domain/port/input"
 
@@ -44,7 +44,7 @@ func (t *taskAdapter) GetAllTasks(
 	if err != nil {
 		tags["error"] = err
 		log.WithFields(tags).Error("Error getting all tasks.")
-		return nil, exception.BuildResponseException(err)
+		return nil, handler.HandleException(err)
 	}
 
 	taskDomainList := grpc.TaskDomainList{}
@@ -80,7 +80,7 @@ func (t *taskAdapter) CreateTask(
 	if err != nil {
 		tags["error"] = err
 		log.WithFields(tags).Error("Error creating new task.")
-		return nil, exception.BuildResponseException(err)
+		return nil, handler.HandleException(err)
 	}
 
 	tags["TaskId"] = taskDomain.TaskId
@@ -107,7 +107,7 @@ func (t *taskAdapter) UpdateTaskMessage(
 	if err != nil {
 		tags["error"] = err
 		log.WithFields(tags).Error("Error updating task message.")
-		return nil, exception.BuildResponseException(err)
+		return nil, handler.HandleException(err)
 	}
 	log.WithFields(tags).Info("Task message successfully updated.")
 	return converters.ConvertToGrpcTaskDomain(*taskDomain), nil
@@ -131,7 +131,7 @@ func (t *taskAdapter) UpdateTaskCompleteness(
 	if err != nil {
 		tags["error"] = err
 		log.WithFields(tags).Error("Error updating task completeness.")
-		return nil, exception.BuildResponseException(err)
+		return nil, handler.HandleException(err)
 	}
 	log.WithFields(tags).Info("Task completeness successfully updated.")
 	return &grpc.Void{}, nil
@@ -155,7 +155,7 @@ func (t *taskAdapter) DeleteMessage(
 	if err != nil {
 		tags["error"] = err
 		log.WithFields(tags).Error("Error deleting task.")
-		return nil, exception.BuildResponseException(err)
+		return nil, handler.HandleException(err)
 	}
 	log.WithFields(tags).Info("Task successfully deleted.")
 	return &grpc.Void{}, nil

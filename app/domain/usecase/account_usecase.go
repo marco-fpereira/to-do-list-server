@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"to-do-list-server/app/adapters/exception"
@@ -44,14 +43,14 @@ func (a *accountUseCase) Signup(
 	if validators.ValidateUserAlreadyExists(user) {
 		return &exception.ResponseException{
 			StatusCode: http.StatusConflict,
-			Err:        errors.New("user already exists"),
+			Message:    "user already exists",
 		}
 	}
 
 	if !validators.ValidatePasswordMatchesRequirements(user.Password) {
 		return &exception.ResponseException{
 			StatusCode: http.StatusBadRequest,
-			Err:        errors.New("password is not strong enough"),
+			Message:    "password is not strong enough",
 		}
 	}
 

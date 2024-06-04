@@ -255,6 +255,32 @@ func TestUpdateTaskCompleteness_200(t *testing.T) {
 	assert.NotNil(void)
 }
 
+func TestUpdateTaskCompleteness_403(t *testing.T) {
+	assert := assert.New(t)
+	client, sqlMock, closer := mock.StartServer(ctx, t)
+	defer closer()
+
+	sqlMock.ExpectQuery(
+		"SELECT * FROM `TASK` WHERE `TASK`.`TaskId` = ? ORDER BY `TASK`.`TaskId` LIMIT ?",
+	).WithArgs(mock.TaskId, 1).WillReturnRows(
+		sqlMock.NewRows([]string{"TaskId", "TaskMessage", "CreatedAt", "IsTaskCompleted", "UserId"}).
+			AddRow(mock.TaskId, mock.TaskMessage, time.Now(), false, "OTHER-USER-ID"),
+	)
+
+	request := &pb.UpdateTaskCompletenessRequest{
+		TaskId:    mock.TaskId,
+		RequestId: uuid.New().String(),
+		Token:     token,
+	}
+
+	void, err := client.UpdateTaskCompleteness(ctx, request)
+	assert.Equal(
+		err.Error(),
+		"rpc error: code = Code(403) desc = err: user does not contain required claims",
+	)
+	assert.Nil(void)
+}
+
 func TestDeleteMessage_200(t *testing.T) {
 	assert := assert.New(t)
 	client, sqlMock, closer := mock.StartServer(ctx, t)

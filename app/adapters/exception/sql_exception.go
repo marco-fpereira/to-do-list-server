@@ -9,11 +9,11 @@ import (
 
 type SqlException struct {
 	StatusCode int
-	Err        error
+	Message    string
 }
 
 func (s *SqlException) Error() string {
-	return fmt.Sprintf("err: %v", s.Err)
+	return fmt.Sprintf("err: %s", s.Message)
 }
 
 func BuildSqlException(
@@ -22,11 +22,11 @@ func BuildSqlException(
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return &SqlException{
 			StatusCode: 404,
-			Err:        err,
+			Message:    err.Error(),
 		}
 	}
 	return &SqlException{
 		StatusCode: 500,
-		Err:        err,
+		Message:    err.Error(),
 	}
 }

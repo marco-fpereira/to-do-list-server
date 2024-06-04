@@ -1,7 +1,6 @@
 package validators
 
 import (
-	"errors"
 	"to-do-list-server/app/adapters/exception"
 	"to-do-list-server/app/domain/model"
 	"unicode"
@@ -17,7 +16,7 @@ func ValidateStringMaxLength(
 	if len(value) > int(maxLength) {
 		return &exception.ResponseException{
 			StatusCode: 400,
-			Err:        errors.New("field surpassed its max length"),
+			Message:    "field surpassed its max length",
 			Fields:     []string{field},
 		}
 	}
@@ -31,7 +30,7 @@ func ValidateUUID(
 	if _, err := uuid.Parse(value); err != nil {
 		return &exception.ResponseException{
 			StatusCode: 400,
-			Err:        errors.New("field is not in uuid format"),
+			Message:    "field is not in uuid format",
 			Fields:     []string{field},
 		}
 	}
@@ -44,7 +43,7 @@ func ValidateUserExists(
 	if user == nil {
 		return &exception.ResponseException{
 			StatusCode: 404,
-			Err:        errors.New("user does not exist"),
+			Message:    "user does not exist",
 			Fields:     []string{"userId"},
 		}
 	}
@@ -57,7 +56,7 @@ func ValidateTaskExists(
 	if task == nil {
 		return &exception.ResponseException{
 			StatusCode: 404,
-			Err:        errors.New("task does not exist"),
+			Message:    "task does not exist",
 			Fields:     []string{"taskId"},
 		}
 	}

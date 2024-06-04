@@ -38,6 +38,10 @@ func (t *taskUsecase) GetAllTasks(
 		return nil, err
 	}
 
+	if validClaim, err := t.auth.ValidateClaim(token, "userId", userId); !validClaim {
+		return nil, err
+	}
+
 	tasks, err := t.database.GetAllTasks(ctx, userId)
 	if err != nil {
 		return nil, err
@@ -60,6 +64,10 @@ func (t *taskUsecase) CreateTask(
 	}
 
 	if err := validators.ValidateStringMaxLength("taskMessage", taskMessage, MAX_MESSAGE_LENGTH); err != nil {
+		return nil, err
+	}
+
+	if validClaim, err := t.auth.ValidateClaim(token, "userId", userId); !validClaim {
 		return nil, err
 	}
 
@@ -101,6 +109,10 @@ func (t *taskUsecase) UpdateTaskMessage(
 		return nil, err
 	}
 
+	if validClaim, err := t.auth.ValidateClaim(token, "userId", task.UserId); !validClaim {
+		return nil, err
+	}
+
 	err = t.database.UpdateTaskMessage(ctx, taskId, taskMessage)
 	if err != nil {
 		return nil, err
@@ -127,6 +139,10 @@ func (t *taskUsecase) UpdateTaskCompleteness(
 		return err
 	}
 
+	if validClaim, err := t.auth.ValidateClaim(token, "userId", task.UserId); !validClaim {
+		return err
+	}
+
 	err = t.database.UpdateTaskCompleteness(ctx, taskId, !task.IsTaskCompleted)
 	if err != nil {
 		return err
@@ -148,6 +164,10 @@ func (t *taskUsecase) DeleteTask(
 		return err
 	}
 	if err = validators.ValidateTaskExists(task); err != nil {
+		return err
+	}
+
+	if validClaim, err := t.auth.ValidateClaim(token, "userId", task.UserId); !validClaim {
 		return err
 	}
 

@@ -1,19 +1,24 @@
 package exception
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type JwtException struct {
 	StatusCode int
-	Err        string
+	Message    string
 }
 
 func (j *JwtException) Error() string {
-	return fmt.Sprintf("err: %v", j.Err)
+	return fmt.Sprintf("err: %v", j.Message)
 }
 
-func BuildJwtException(err error) error {
+func BuildJwtException(
+	statusCode int,
+	message string,
+) error {
 	return &JwtException{
-		StatusCode: 401,
-		Err:        err.Error(),
+		StatusCode: statusCode,
+		Message:    message,
 	}
 }
