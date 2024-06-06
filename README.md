@@ -341,3 +341,11 @@ apt-get -y install make
 make deploy
 
 ```
+
+# References used during the project:
+- https://blog.logrocket.com/jwt-authentication-go/
+- https://dave.cheney.net/practical-go/presentations/qcon-china.html
+- https://grpc.io/docs/languages/go/basics/
+- https://medium.com/@cheickzida/golang-implementing-jwt-token-authentication-bba9bfd84d60
+- https://medium.com/@rnp0728/secure-password-hashing-in-go-a-comprehensive-guide-5500e19e7c1f
+- https://medium.com/@wahyubagus1910/build-scalable-restful-api-with-golang-gin-gonic-framework-43793c730d10
