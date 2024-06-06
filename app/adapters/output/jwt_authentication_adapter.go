@@ -66,6 +66,9 @@ func (j *JwtAuthenticationAdapter) ValidateClaim(
 }
 
 func (j *JwtAuthenticationAdapter) getJwtToken(token string) (*jwt.Token, error) {
+	if token == "" {
+		return nil, exception.BuildJwtException(401, "token not received")
+	}
 	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			log.WithField(

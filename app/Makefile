@@ -21,10 +21,13 @@ init-dependency:
 	go get -u github.com/stretchr/testify/assert
 	go get -u google.golang.org/grpc
 
+test:
+	go test ./tests/... -cover
+
 build:
 	go build -o bin/app app.go
 
 run:
 	go run app.go
 
-deploy: init-protobuf init-dependency build run
+deploy: init-protobuf init-dependency test build run

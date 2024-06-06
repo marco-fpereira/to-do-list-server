@@ -28,9 +28,11 @@ var (
 	Password    = "My_s@f3_password"
 	TaskId      = "0fa0ac05-f20f-446f-beca-20fa636daf9c"
 	TaskMessage = "Hello World"
+	Ctx         context.Context
+	Token       string
 )
 
-func StartServer(ctx context.Context, t *testing.T) (pb.TaskClient, sqlmock.Sqlmock, func()) {
+func StartTaskServer(ctx context.Context, t *testing.T) (pb.TaskClient, sqlmock.Sqlmock, func()) {
 	mockController := gomock.NewController(t)
 	defer mockController.Finish()
 
@@ -74,6 +76,54 @@ func StartServer(ctx context.Context, t *testing.T) (pb.TaskClient, sqlmock.Sqlm
 	}
 
 	client := pb.NewTaskClient(conn)
+	return client, sqlMock, closer
+}
+
+func StartAccountServer(ctx context.Context, t *testing.T) (pb.AccountClient, sqlmock.Sqlmock, func()) {
+	mockController := gomock.NewController(t)
+	defer mockController.Finish()
+
+	buffer := 101024 * 1024
+	listener := bufconn.Listen(buffer)
+
+	baseServer := grpc.NewServer()
+
+	dbMock, sqlMock := getSqlMock()
+
+	database := output.NewMysqlDatabaseAdapter(dbMock)
+	auth := output.NewJwtAuthenticationAdapter()
+	crypt := output.NewBCryptCryptographyAdapter()
+	account := usecase.NewAccountUseCase(auth, crypt, database)
+	accountAdapter := adapterInput.NewAccountAdapter(account)
+
+	pb.RegisterAccountServer(baseServer, accountAdapter)
+
+	go func() {
+		if err := baseServer.Serve(listener); err != nil {
+			log.Fatalf("Error serving server %v", err)
+		}
+	}()
+
+	conn, err := grpc.NewClient(
+		"localhost:50051",
+		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+			return listener.Dial()
+		}), grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+
+	if err != nil {
+		log.Fatalf("error connecting to server %v", err)
+	}
+
+	closer := func() {
+		err := listener.Close()
+		if err != nil {
+			log.Printf("error closing listener %v", err)
+		}
+		baseServer.Stop()
+	}
+
+	client := pb.NewAccountClient(conn)
 	return client, sqlMock, closer
 }
 

@@ -7,8 +7,8 @@ import (
 
 type UserCredentialsDTO struct {
 	UserId   string `copier:"UserId" gorm:"primaryKey;column:UserId"`
-	Username string `copier:"Username"`
-	Password string `copier:"Password"`
+	Username string `copier:"Username" gorm:"column:Username"`
+	Password string `copier:"Password" gorm:"column:Password"`
 }
 
 func (UserCredentialsDTO) TableName() string {

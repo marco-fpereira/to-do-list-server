@@ -45,10 +45,11 @@ func (a *accountUseCase) Signup(
 		return &exception.ResponseException{
 			StatusCode: 409,
 			Message:    "user already exists",
+			Fields:     []string{"Username"},
 		}
 	}
 
-	if !validators.ValidatePasswordMatchesRequirements(user.Password) {
+	if !validators.ValidatePasswordMatchesRequirements(userCredentials.Password) {
 		return &exception.ResponseException{
 			StatusCode: 400,
 			Message:    "password is not strong enough",
@@ -93,7 +94,7 @@ func (a *accountUseCase) Login(
 		return "", err
 	}
 
-	isPasswordCorrect := a.crypt.VerifyEncryptedKey(user.Password, userCredentials.Password)
+	isPasswordCorrect := a.crypt.VerifyEncryptedKey(userCredentials.Password, user.Password)
 
 	if !isPasswordCorrect {
 		return "", &exception.ResponseException{
