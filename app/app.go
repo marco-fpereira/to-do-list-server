@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -8,22 +9,24 @@ import (
 	outputAdapter "to-do-list-server/app/adapters/output"
 	"to-do-list-server/app/config"
 	pb "to-do-list-server/app/config/grpc"
+	"to-do-list-server/app/config/logger"
 	outputDomain "to-do-list-server/app/domain/port/output"
 	domain "to-do-list-server/app/domain/usecase"
 
 	"github.com/joho/godotenv"
-	log "github.com/sirupsen/logrus"
 	grpc "google.golang.org/grpc"
 	"gorm.io/gorm"
 )
 
+var grpcPort = 50051
+
 func main() {
 	godotenv.Load()
-	config.InitLog()
+	logger.InitLogger()
 
-	listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 50051))
+	listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", grpcPort))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.Fatal(context.Background(), "failed to listen", err)
 	}
 
 	var opts []grpc.ServerOption
@@ -32,7 +35,7 @@ func main() {
 	var db *gorm.DB
 	db, err = config.DbConnect()
 	if err != nil {
-		log.Fatalf("failed to open database connection: %v", err)
+		logger.Fatal(context.Background(), "failed to open database connection", err)
 	}
 
 	bcryptCryptographyAdapter := outputAdapter.NewBCryptCryptographyAdapter()
@@ -42,7 +45,7 @@ func main() {
 	pb.RegisterAccountServer(grpcServer,
 		buildAccountAdapter(jwtAuthenticationAdapter, bcryptCryptographyAdapter, mysqlDatabaseAdapter),
 	)
-
+	logger.Info(context.Background(), fmt.Sprintf("application started on port %d", grpcPort))
 	grpcServer.Serve(listener)
 }
 

@@ -2,7 +2,6 @@ package model
 
 import (
 	"time"
-	//	"github.com/jinzhu/copier"
 )
 
 type TaskDomain struct {
