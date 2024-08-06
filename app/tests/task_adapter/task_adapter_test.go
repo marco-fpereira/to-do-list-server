@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 	pb "to-do-list-server/app/config/grpc"
+	"to-do-list-server/app/config/logger"
 	tests "to-do-list-server/app/tests"
 	mock "to-do-list-server/app/tests/mock"
 
@@ -21,6 +22,7 @@ import (
 func TestMain(m *testing.M) {
 	tests.SetEnvVars()
 	defer tests.DeleteEnvVars()
+	logger.InitLogger()
 	mock.Ctx = context.Background()
 	mock.Token = tests.GenerateMockToken()
 	code := m.Run()
