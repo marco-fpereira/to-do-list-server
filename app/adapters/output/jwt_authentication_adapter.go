@@ -1,12 +1,15 @@
 package output
 
 import (
+	"context"
+	"errors"
 	"os"
 	"to-do-list-server/app/adapters/exception"
+	"to-do-list-server/app/config/logger"
 	"to-do-list-server/app/domain/port/output"
 
 	jwt "github.com/golang-jwt/jwt/v5"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 type JwtAuthenticationAdapter struct {
@@ -71,10 +74,10 @@ func (j *JwtAuthenticationAdapter) getJwtToken(token string) (*jwt.Token, error)
 	}
 	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			log.WithField(
-				"error",
-				"there's an error with the signing method",
-			).Error("error parsing token")
+			err := errors.New("there's an error with the signing method")
+			tag := []zap.Field{zap.String("cause", err.Error())}
+			logger.Error(context.Background(), "error parsing token", err, tag...)
+
 			return false, exception.BuildJwtException(401, "error parsing token")
 		}
 		return j.secretKey, nil

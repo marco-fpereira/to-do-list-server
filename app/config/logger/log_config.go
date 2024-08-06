@@ -21,7 +21,7 @@ func InitLogger() {
 			LevelKey:     "level",
 			TimeKey:      "time",
 			MessageKey:   "message",
-			EncodeLevel:  zapcore.LowercaseColorLevelEncoder,
+			EncodeLevel:  zapcore.LowercaseLevelEncoder,
 			EncodeTime:   zapcore.ISO8601TimeEncoder,
 			EncodeCaller: zapcore.ShortCallerEncoder,
 		},

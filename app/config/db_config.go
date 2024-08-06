@@ -1,10 +1,11 @@
 package config
 
 import (
+	"context"
 	"os"
+	"to-do-list-server/app/config/logger"
 
 	goSqlDriver "github.com/go-sql-driver/mysql"
-	log "github.com/sirupsen/logrus"
 	gormMysqlDriver "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -25,7 +26,7 @@ func DbConnect() (*gorm.DB, error) {
 
 	db, err := gorm.Open(gormMysqlDriver.Open(cfg.FormatDSN()), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Error initializing database: %v", err)
+		logger.Fatal(context.Background(), "Error initializing database", err)
 		return nil, err
 	}
 

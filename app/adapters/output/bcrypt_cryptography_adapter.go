@@ -1,10 +1,12 @@
 package output
 
 import (
+	"context"
 	"to-do-list-server/app/adapters/exception"
+	"to-do-list-server/app/config/logger"
 	"to-do-list-server/app/domain/port/output"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,7 +19,8 @@ func NewBCryptCryptographyAdapter() output.CryptographyPort {
 func (bc *BCryptCryptographyAdapter) EncryptKey(rawKey string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(rawKey), 5)
 	if err != nil {
-		log.WithField("cause", err.Error()).Error("Error encrypting key")
+		tag := []zap.Field{zap.String("cause", err.Error())}
+		logger.Error(context.Background(), "Error encrypting key", err, tag...)
 		return "", exception.BuildBCryptException("Error encrypting key")
 	}
 	return string(bytes), nil
@@ -29,7 +32,8 @@ func (bc *BCryptCryptographyAdapter) VerifyEncryptedKey(
 ) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(encryptedKey), []byte(rawKey))
 	if err != nil {
-		log.WithField("cause", err.Error()).Error("Error verifying encrypted key")
+		tag := []zap.Field{zap.String("cause", err.Error())}
+		logger.Error(context.Background(), "Error verifying encrypted key", err, tag...)
 		return false
 	}
 	return true

@@ -6,9 +6,10 @@ import (
 	"to-do-list-server/app/adapters/converters"
 	"to-do-list-server/app/adapters/exception/handler"
 	"to-do-list-server/app/config/grpc"
+	"to-do-list-server/app/config/logger"
 	"to-do-list-server/app/domain/port/input"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 type accountAdapter struct {
@@ -27,11 +28,11 @@ func (a *accountAdapter) Signup(
 	userCredentialsRequest *grpc.UserCredentialsRequest,
 ) (*grpc.Void, error) {
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, userCredentialsRequest.RequestId)
-	tags := log.Fields{
-		"Username":  userCredentialsRequest.Username,
-		"RequestId": userCredentialsRequest.RequestId,
+	tags := []zap.Field{
+		zap.String("Username", userCredentialsRequest.Username),
+		zap.String("RequestId", userCredentialsRequest.RequestId),
 	}
-	log.WithFields(tags).Info("Signing up user.")
+	logger.Info(ctx, "Signing up user.", tags...)
 
 	err := a.Account.Signup(
 		ctx,
@@ -39,11 +40,10 @@ func (a *accountAdapter) Signup(
 		userCredentialsRequest.Token,
 	)
 	if err != nil {
-		tags["error"] = err
-		log.WithFields(tags).Error("Error signing up user.")
+		logger.Error(ctx, "Error signing up user.", err, tags...)
 		return nil, handler.HandleException(err)
 	}
-	log.WithFields(tags).Info("User successfully signed up.")
+	logger.Info(ctx, "User successfully signed up.", tags...)
 
 	return &grpc.Void{}, nil
 }
@@ -53,11 +53,12 @@ func (a *accountAdapter) Login(
 	userCredentialsRequest *grpc.UserCredentialsRequest,
 ) (*grpc.UserId, error) {
 	ctx = context.WithValue(ctx, consts.REQUEST_ID, userCredentialsRequest.RequestId)
-	tags := log.Fields{
-		"Username":  userCredentialsRequest.Username,
-		"RequestId": userCredentialsRequest.RequestId,
+	tags := []zap.Field{
+		zap.String("Username", userCredentialsRequest.Username),
+		zap.String("RequestId", userCredentialsRequest.RequestId),
 	}
-	log.WithFields(tags).Info("Logging in user.")
+
+	logger.Info(ctx, "Logging in user.", tags...)
 
 	userId, err := a.Account.Login(
 		ctx,
@@ -65,12 +66,11 @@ func (a *accountAdapter) Login(
 		userCredentialsRequest.Token,
 	)
 	if err != nil {
-		tags["error"] = err
-		log.WithFields(tags).Error("Error logging in user.")
+		logger.Error(ctx, "Error logging in user.", err, tags...)
 		return nil, handler.HandleException(err)
 	}
 
-	tags["userId"] = userId
-	log.WithFields(tags).Info("User successfully logged in.")
+	tags = append(tags, zap.String("userId", userId))
+	logger.Info(ctx, "User successfully logged in.", tags...)
 	return &grpc.UserId{UserId: userId}, nil
 }

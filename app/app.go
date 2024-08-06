@@ -23,6 +23,9 @@ var grpcPort = 50051
 func main() {
 	godotenv.Load()
 	logger.InitLogger()
+	ctx := context.Background()
+
+	logger.Info(ctx, "Starting application")
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", grpcPort))
 	if err != nil {
@@ -37,6 +40,7 @@ func main() {
 	if err != nil {
 		logger.Fatal(context.Background(), "failed to open database connection", err)
 	}
+	logger.Info(ctx, "Database connection successfully created")
 
 	bcryptCryptographyAdapter := outputAdapter.NewBCryptCryptographyAdapter()
 	jwtAuthenticationAdapter := outputAdapter.NewJwtAuthenticationAdapter()
