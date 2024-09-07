@@ -2,8 +2,10 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"os"
-	"to-do-list-server/app/config/logger"
+
+	"github.com/marco-fpereira/to-do-list-server/config/logger"
 
 	goSqlDriver "github.com/go-sql-driver/mysql"
 	gormMysqlDriver "gorm.io/driver/mysql"
@@ -24,9 +26,10 @@ func DbConnect() (*gorm.DB, error) {
 		Params:    m,
 	}
 
-	db, err := gorm.Open(gormMysqlDriver.Open(cfg.FormatDSN()), &gorm.Config{})
+	dns := cfg.FormatDSN()
+	db, err := gorm.Open(gormMysqlDriver.Open(dns), &gorm.Config{})
 	if err != nil {
-		logger.Fatal(context.Background(), "Error initializing database", err)
+		logger.Fatal(context.Background(), fmt.Sprintf("Error initializing database on dns %s", dns), err)
 		return nil, err
 	}
 

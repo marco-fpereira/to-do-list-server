@@ -7,10 +7,11 @@ import (
 	"os"
 	"testing"
 	"time"
-	pb "to-do-list-server/app/config/grpc"
-	"to-do-list-server/app/config/logger"
-	tests "to-do-list-server/app/tests"
-	mock "to-do-list-server/app/tests/mock"
+
+	pb "github.com/marco-fpereira/to-do-list-server/config/grpc"
+	"github.com/marco-fpereira/to-do-list-server/config/logger"
+	tests "github.com/marco-fpereira/to-do-list-server/tests"
+	mock "github.com/marco-fpereira/to-do-list-server/tests/mock"
 
 	goSqlMock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"

@@ -2,12 +2,13 @@ package input
 
 import (
 	"context"
-	consts "to-do-list-server/app/adapters/consts"
-	"to-do-list-server/app/adapters/converters"
-	"to-do-list-server/app/adapters/exception/handler"
-	"to-do-list-server/app/config/grpc"
-	"to-do-list-server/app/config/logger"
-	"to-do-list-server/app/domain/port/input"
+
+	consts "github.com/marco-fpereira/to-do-list-server/adapters/consts"
+	"github.com/marco-fpereira/to-do-list-server/adapters/converters"
+	"github.com/marco-fpereira/to-do-list-server/adapters/exception/handler"
+	"github.com/marco-fpereira/to-do-list-server/config/grpc"
+	"github.com/marco-fpereira/to-do-list-server/config/logger"
+	"github.com/marco-fpereira/to-do-list-server/domain/port/input"
 
 	"go.uber.org/zap"
 )

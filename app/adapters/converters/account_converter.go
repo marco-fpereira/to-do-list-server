@@ -1,8 +1,8 @@
 package converters
 
 import (
-	"to-do-list-server/app/config/grpc"
-	"to-do-list-server/app/domain/model"
+	"github.com/marco-fpereira/to-do-list-server/config/grpc"
+	"github.com/marco-fpereira/to-do-list-server/domain/model"
 )
 
 func FromRequestToModelUserCredentialsDomain(

@@ -3,10 +3,11 @@ package output
 import (
 	"context"
 	"errors"
-	"to-do-list-server/app/adapters/exception"
-	"to-do-list-server/app/adapters/output/dto"
-	"to-do-list-server/app/domain/model"
-	"to-do-list-server/app/domain/port/output"
+
+	"github.com/marco-fpereira/to-do-list-server/adapters/exception"
+	"github.com/marco-fpereira/to-do-list-server/adapters/output/dto"
+	"github.com/marco-fpereira/to-do-list-server/domain/model"
+	"github.com/marco-fpereira/to-do-list-server/domain/port/output"
 
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"

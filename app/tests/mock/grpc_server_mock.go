@@ -8,10 +8,11 @@ import (
 	"net"
 	"testing"
 	"time"
-	adapterInput "to-do-list-server/app/adapters/input"
-	"to-do-list-server/app/adapters/output"
-	pb "to-do-list-server/app/config/grpc"
-	"to-do-list-server/app/domain/usecase"
+
+	adapterInput "github.com/marco-fpereira/to-do-list-server/adapters/input"
+	"github.com/marco-fpereira/to-do-list-server/adapters/output"
+	pb "github.com/marco-fpereira/to-do-list-server/config/grpc"
+	"github.com/marco-fpereira/to-do-list-server/domain/usecase"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"

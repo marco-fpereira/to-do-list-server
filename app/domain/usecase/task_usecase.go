@@ -2,10 +2,11 @@ package usecase
 
 import (
 	"context"
-	"to-do-list-server/app/domain/model"
-	"to-do-list-server/app/domain/port/input"
-	"to-do-list-server/app/domain/port/output"
-	"to-do-list-server/app/domain/validators"
+
+	"github.com/marco-fpereira/to-do-list-server/domain/model"
+	"github.com/marco-fpereira/to-do-list-server/domain/port/input"
+	"github.com/marco-fpereira/to-do-list-server/domain/port/output"
+	"github.com/marco-fpereira/to-do-list-server/domain/validators"
 )
 
 const MAX_MESSAGE_LENGTH = 512

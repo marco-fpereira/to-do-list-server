@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: to-do-list-database-secret
+type: kubernetes.io/basic-auth
+stringData:
+  password: myunsafepassword+123
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: to-do-list-database-pv
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: to-do-list-database-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: to-do-list-database
+  labels:
+    app: to-do-list-database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: to-do-list-database
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: to-do-list-database
+    spec:
+      containers:
+        - name: to-do-list-database
+          image: to-do-list-database:1.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: to-do-list-database-secret
+                  key: password
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: to-do-list-database-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: to-do-list-database-service
+spec:
+  selector:
+    app: to-do-list-database
+  ports:
+    - port: 3306
+---

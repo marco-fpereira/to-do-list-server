@@ -4,21 +4,27 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 
-	inputAdapter "to-do-list-server/app/adapters/input"
-	outputAdapter "to-do-list-server/app/adapters/output"
-	"to-do-list-server/app/config"
-	pb "to-do-list-server/app/config/grpc"
-	"to-do-list-server/app/config/logger"
-	outputDomain "to-do-list-server/app/domain/port/output"
-	domain "to-do-list-server/app/domain/usecase"
+	inputAdapter "github.com/marco-fpereira/to-do-list-server/adapters/input"
+	outputAdapter "github.com/marco-fpereira/to-do-list-server/adapters/output"
+	"github.com/marco-fpereira/to-do-list-server/config"
+	"github.com/marco-fpereira/to-do-list-server/config/env"
+	pb "github.com/marco-fpereira/to-do-list-server/config/grpc"
+	"github.com/marco-fpereira/to-do-list-server/config/logger"
+	outputDomain "github.com/marco-fpereira/to-do-list-server/domain/port/output"
+	domain "github.com/marco-fpereira/to-do-list-server/domain/usecase"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	grpc "google.golang.org/grpc"
 	"gorm.io/gorm"
 )
 
-var grpcPort = 50051
+var (
+	grpcPort        = env.GetEnv("GRPC_PORT", "50051")
+	healthCheckPort = env.GetEnv("HEALTH_CHECK_PORT", "8888")
+)
 
 func main() {
 	godotenv.Load()
@@ -27,9 +33,9 @@ func main() {
 
 	logger.Info(ctx, "Starting application")
 
-	listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", grpcPort))
+	listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", grpcPort))
 	if err != nil {
-		logger.Fatal(context.Background(), "failed to listen", err)
+		logger.Fatal(ctx, "failed to listen", err)
 	}
 
 	var opts []grpc.ServerOption
@@ -38,7 +44,7 @@ func main() {
 	var db *gorm.DB
 	db, err = config.DbConnect()
 	if err != nil {
-		logger.Fatal(context.Background(), "failed to open database connection", err)
+		logger.Fatal(ctx, "failed to open database connection", err)
 	}
 	logger.Info(ctx, "Database connection successfully created")
 
@@ -49,7 +55,8 @@ func main() {
 	pb.RegisterAccountServer(grpcServer,
 		buildAccountAdapter(jwtAuthenticationAdapter, bcryptCryptographyAdapter, mysqlDatabaseAdapter),
 	)
-	logger.Info(context.Background(), fmt.Sprintf("application started on port %d", grpcPort))
+	go setupHealthCheck(ctx)
+	logger.Info(ctx, fmt.Sprintf("application started on port %s", grpcPort))
 	grpcServer.Serve(listener)
 }
 
@@ -72,4 +79,15 @@ func buildTaskAdapter(
 ) pb.TaskServer {
 	taskPort := domain.NewTaskUseCase(jwtAuthenticationAdapter, mysqlDatabaseAdapter)
 	return inputAdapter.NewTaskAdapter(taskPort)
+}
+
+func setupHealthCheck(ctx context.Context) {
+	r := gin.Default()
+	r.GET("/actuator/health", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, "OK")
+	})
+	err := r.Run(fmt.Sprintf(":%s", healthCheckPort))
+	if err != nil {
+		logger.Fatal(ctx, "error starting health check server. Details: %v", err)
+	}
 }

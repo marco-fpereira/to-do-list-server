@@ -2,7 +2,8 @@ package handler
 
 import (
 	"errors"
-	"to-do-list-server/app/adapters/exception"
+
+	"github.com/marco-fpereira/to-do-list-server/adapters/exception"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

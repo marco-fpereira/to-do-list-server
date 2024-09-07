@@ -2,7 +2,8 @@ package output
 
 import (
 	"context"
-	"to-do-list-server/app/domain/model"
+
+	"github.com/marco-fpereira/to-do-list-server/domain/model"
 )
 
 type DatabasePort interface {

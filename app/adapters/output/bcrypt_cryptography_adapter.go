@@ -2,9 +2,10 @@ package output
 
 import (
 	"context"
-	"to-do-list-server/app/adapters/exception"
-	"to-do-list-server/app/config/logger"
-	"to-do-list-server/app/domain/port/output"
+
+	"github.com/marco-fpereira/to-do-list-server/adapters/exception"
+	"github.com/marco-fpereira/to-do-list-server/config/logger"
+	"github.com/marco-fpereira/to-do-list-server/domain/port/output"
 
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"

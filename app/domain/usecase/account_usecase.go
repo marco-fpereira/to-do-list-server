@@ -2,11 +2,13 @@ package usecase
 
 import (
 	"context"
-	"to-do-list-server/app/adapters/exception"
-	"to-do-list-server/app/domain/model"
-	"to-do-list-server/app/domain/port/input"
-	"to-do-list-server/app/domain/port/output"
-	"to-do-list-server/app/domain/validators"
+
+	"github.com/marco-fpereira/to-do-list-server/domain/model"
+	"github.com/marco-fpereira/to-do-list-server/domain/port/input"
+	"github.com/marco-fpereira/to-do-list-server/domain/port/output"
+	"github.com/marco-fpereira/to-do-list-server/domain/validators"
+
+	"github.com/marco-fpereira/to-do-list-server/adapters/exception"
 )
 
 type accountUseCase struct {
@@ -81,13 +83,6 @@ func (a *accountUseCase) Login(
 	user, err := a.database.GetUserByUsername(ctx, userCredentials.Username)
 	if err != nil {
 		return "", err
-	}
-
-	if !validators.ValidateUserAlreadyExists(user) {
-		return "", &exception.ResponseException{
-			StatusCode: 400,
-			Message:    "username or password is incorrect",
-		}
 	}
 
 	if validClaim, err := a.auth.ValidateClaim(token, "userId", user.UserId); !validClaim {

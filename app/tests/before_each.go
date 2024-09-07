@@ -6,7 +6,8 @@ import (
 	"os"
 	"strconv"
 	"time"
-	"to-do-list-server/app/tests/mock"
+
+	"github.com/marco-fpereira/to-do-list-server/tests/mock"
 
 	jwt "github.com/golang-jwt/jwt/v5"
 )

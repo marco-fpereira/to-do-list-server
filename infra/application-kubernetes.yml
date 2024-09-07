@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: to-do-list-server-configmap
+  namespace: default
+data:
+  GRPC_PORT: "50051"
+  HTTP_PORT: "8080"
+  HEALTH_CHECK_PORT: "8888"
+  HOST: "to-do-list-database-service"
+  DBPORT: "3306"
+  DBUSER: "root"
+  DBNAME: "TODOLIST"
+  LOG_OUTPUT: "stdout"
+  LOG_LEVEL: "info"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: to-do-list-server-secrets
+data:
+  JWT-SECRET-KEY: ZWUxNTA4NzktZjdmYS00N2FjLTg3MzYtMzRmOGIwODAzMjZh
+  DBPASS: "bXl1bnNhZmVwYXNzd29yZCsxMjM="
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: to-do-list-server
+  labels:
+    app: to-do-list-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: to-do-list-server
+  template:
+    metadata:
+      labels:
+        app: to-do-list-server
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "3000"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+        - name: to-do-list-server
+          image: to-do-list-server:v1
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 50051
+              name: grpc
+            - containerPort: 8888
+              name: healthcheck
+            - containerPort: 3000
+              name: prometheus
+          envFrom:
+            - configMapRef:
+                name: to-do-list-server-configmap
+            - secretRef:
+                name: to-do-list-server-secrets
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 200Mi
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8888
+              scheme: HTTP
+            initialDelaySeconds: 50
+            timeoutSeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8888
+              scheme: HTTP
+            timeoutSeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: to-do-list-server-service
+  namespace: default
+spec:
+  selector:
+    app: to-do-list-server
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      name: http
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+      name: grpc
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: to-do-list-server-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: to-do-list-server-deployment
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+---

@@ -1,8 +1,9 @@
 package validators
 
 import (
-	"to-do-list-server/app/adapters/exception"
-	"to-do-list-server/app/domain/model"
+	"github.com/marco-fpereira/to-do-list-server/adapters/exception"
+	"github.com/marco-fpereira/to-do-list-server/domain/model"
+
 	"unicode"
 
 	"github.com/google/uuid"
