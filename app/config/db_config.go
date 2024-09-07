@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/marco-fpereira/to-do-list-server/config/logger"
@@ -26,10 +25,9 @@ func DbConnect() (*gorm.DB, error) {
 		Params:    m,
 	}
 
-	dns := cfg.FormatDSN()
-	db, err := gorm.Open(gormMysqlDriver.Open(dns), &gorm.Config{})
+	db, err := gorm.Open(gormMysqlDriver.Open(cfg.FormatDSN()), &gorm.Config{})
 	if err != nil {
-		logger.Fatal(context.Background(), fmt.Sprintf("Error initializing database on dns %s", dns), err)
+		logger.Fatal(context.Background(), "Error initializing database", err)
 		return nil, err
 	}
 

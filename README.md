@@ -350,10 +350,3 @@ make deploy
 - https://medium.com/@rnp0728/secure-password-hashing-in-go-a-comprehensive-guide-5500e19e7c1f
 - https://medium.com/@wahyubagus1910/build-scalable-restful-api-with-golang-gin-gonic-framework-43793c730d10
 
-cd ./infra/database
-docker build -t "to-do-list-database:1.0" --target database .
-kubectl apply -f ./database-kubernetes.yml
-cd ../../app
-docker build -t "to-do-list-server:v1" --target application .
-cd ../infra
-kubectl apply -f ./application-kubernetes.yml

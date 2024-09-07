@@ -16,9 +16,3 @@ RUN chown -R gouser:gouser /app
 USER gouser:gouser
 EXPOSE 8080 8888 3000 50051
 CMD ["./app"]
-# cd ./app
-# docker build -t "to-do-list-server:v1" --target application .
-# cd ..
-# kubectl apply -f ./infra/kubernetes.yml
-# kubectl get pods
-# kubectl describe pod to-do-list-server-{pod-hash}
